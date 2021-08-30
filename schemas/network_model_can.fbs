@@ -1,0 +1,124 @@
+//***************************************************************************
+// Copyright (c) 2021 for information on the respective copyright owner
+// see the NOTICE file and/or the repository https://github.com/boschglobal/automotive-bus-schema
+//
+// SPDX-License-Identifier: Apache-2.0
+//***************************************************************************
+//
+// Interface Description for VDA Interface - Network Model - CAN
+// Network Model Can - NMC - NMCA (flatbuffers file identifier)
+//
+// IDL for Open Simulation Interface - Network Model - CAN
+//
+// Network Model Can - NMC - NMCA (flatbuffers file identifier)
+// MIME type : application/x-open-simulation-interface-network-model; type=CAN;
+//
+
+namespace NetworkModels.CAN;
+
+
+// FlatBuffers Types:
+//  8 bit: byte ubyte bool
+//  16 bit: short ushort
+//  32 bit: int uint float
+//  64 bit: long ulong double
+
+
+// L2 CAN Bus Model
+// ================
+
+// L2 Bus Status. (TODO review these states)
+enum BusState:byte { BusOff = 0, Idle = 1, Sync = 2 }
+
+table CanStatus {
+    sync:BusState;
+}
+
+
+
+// L3 CAN Bus Model
+// ================
+
+// Holds data from clock system call. Used for timestamps and simulation time.
+struct TimeSpec {
+    sec:long;
+    nsec:long;
+}
+
+// Direction (of a CAN Buffer), None is disabled.
+enum BufferDirection:byte { None = 0, Tx = 1, Rx = 2 }
+
+// Status of a CAN Buffer.
+enum BufferStatus:byte { None = 0, TxDone = 1, RxDone = 2, TxError = 11, RxError = 12 }
+
+// Link Protocol Data Unit (L-PDU).
+table LinkProtocolDataUnit {
+    frame_id:long;          // CAN Message ID, TODO check length, esp for CAN FD.
+                            //   Tx - Frame ID
+                            //   Rx - Filtering schema (TODO: define, relates to rtr?)
+    payload:[ubyte];        // LPDU Payload. Expected to be allocated at the
+                            //   maximum LPDU length (i.e. 256 bytes).
+    length:ubyte;           // Length of payload content (not the size of the payload vector).
+}
+
+// CAN Buffer, representation of a single CAN Tx/Rx Buffer.
+//  Structs are fixed, no schema versioning, so can be precise to a chipset, then use Union to add to RegisterFile. Perhaps?
+// TODO review for forward/backwards compatibility. Some items (LPDU) might be
+//  better represented as struct's.
+table CanBuffer {
+    // Buffer/Register
+    index:ubyte (key);                  // Buffer Index, maps to a Register File position (0..n).
+    direction:BufferDirection = None;   // None, Tx, Rx
+    status:BufferStatus = None;         // None, TxDone, RxDone, TxError, RxError
+
+    // Frame Signals (TODO are these sent using a CAN Buffer? or as features of the RegisterFile (below)).
+    rtr:bool = 0;                       // Remote Frame request.
+
+    // LPDU
+    lpdu:LinkProtocolDataUnit;          // LPDU Frame.
+
+    // Simulation Environment - The following values are injected/modified by
+    //  the simulation environment and for FMU's are information only.
+    timestamp:TimeSpec (required);          // Time since Linux epoch, in uSec.
+    simulation_time:TimeSpec (required);    // Simulation time, in uSec.
+}
+
+
+// CAN Register File
+// =================
+
+// Different CAN Transceivers will have different number of Buffers in their
+//  Register File. The "index" of each Buffer should be initialized (depending on
+//  the mode of operation, a partial Register File might be sent, in which case
+//  the buffer.index would be needed to marshal data to correct locations).
+
+// Register Mode.
+enum BufferMode:byte { Register = 0, Fifo = 1 }
+
+table RegisterFile {
+    status:CanStatus;       // L2 Bus Status.
+    buffer:[CanBuffer];     // L3 Buffers for CAN Messages.
+    mode:[BufferMode];      // Buffers operate in Register or FIFO mode. (TODO Placeholder, review)
+
+    // Registers, error monitoring.
+    //  TEC or REC greater than 127 and lesser than 255 - Passive Error frame sent.
+    //  TEC and REC lesser than 128 - Active Error frame sent.
+    //  TEC is greater than 255 - no frames sent, node BusState set to BusOff
+    rec:int = 0;            // REC receive error counter.
+    tec:int = 0;            // TEC Transmit error counter.
+    active_error:bool = 0;  // Signal to send an Active Error frame.
+    passive_error:bool = 0; // Signal to send an Passive Error frame.
+    overload:bool = 0;      // Signal to send an Overload frame.
+
+    // The following values are injected/modified by the simulation environment
+    //  and for FMU's are information only.
+    ecu_id:int = 0;             // UID for this ECU within the stimulation.
+    timestamp:TimeSpec;         // Time since Linux epoch, in uSec.
+    simulation_time:TimeSpec;   // Simulation time, in uSec.
+}
+
+
+
+root_type RegisterFile;
+file_identifier "NMCA";
+file_extension "can";

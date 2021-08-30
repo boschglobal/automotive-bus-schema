@@ -1,0 +1,93 @@
+//***************************************************************************
+// Copyright (c) 2021 for information on the respective copyright owner
+// see the NOTICE file and/or the repository https://github.com/boschglobal/automotive-bus-schema
+//
+// SPDX-License-Identifier: Apache-2.0
+//***************************************************************************
+//
+// Interface Description for VDA Interface - Network Model - CAN
+// Network Model Can - NMC - NMCA (flatbuffers file identifier)
+//
+// IDL for Open Simulation Interface - Network Model - Signal
+//
+// Network Model Signal - NMS - NMSI (flatbuffers file identifier)
+// MIME type : application/x-open-simulation-interface-network-model; type=Signal;
+
+namespace NetworkModels.Signal;
+
+
+// FlatBuffers Types:
+//  8 bit: byte ubyte bool
+//  16 bit: short ushort
+//  32 bit: int uint float
+//  64 bit: long ulong double
+
+
+// Signals exchanged between ECU's (via an Adapter).
+table Signal {
+    // A signal must be identified by either a NAME or UID. If both are provided
+    //  the exact behavior (which value is used) is implementation specific.
+    name:string;        // Signal Name, should be unique to the Bus/Network.
+    uid:ulong;          // Hash of the Signal Name (see table SignalQuery).
+
+    // Values are processed by an adapter as follows:
+    //  1/ If a physical_value or logical_value is defined, they are
+    //      validated. If the validation fails the adapter will NOT forward
+    //      the message.
+    //  2/ If an encoded_value is missing, it will be calculated.
+    //  3/ If both the physical_value AND logical_value are missing, one or the
+    //      other will be calculated.
+
+    physical_value:double;      // Physical Value.
+    logical_value:uint;         // Logical Value (will have priority over
+                                //  physical_value when encoding).
+
+    encoded_value:ulong;        // Encoded Value (as would appear on a Bus).
+
+    data:[ubyte];       // Binary data (if the signal represents byte array).
+}
+
+
+// A Signal Symbol is the definition of a Logical Value which might be assigned
+//  to a Signal.symbol.
+table SignalSymbol {
+    name:string;        // Symbol name for this Logical Value.
+    value:uint;         // Corresponding Logical Value for this Symbol.
+}
+
+
+// Signal Encoding defines how a Signal Value is represented as a Raw Signal
+//  on a Bus. This is used by an Adapter to validate Signal messages.
+table SignalEncoding {
+    name:string;        // Signal Name, should be unique to the Bus/Network.
+    uid:ulong;          // Alternative to Signal Name (generate with md5()
+                        // or blake2b() style hash functions).
+
+    // Physical Value of Signal (used for validation).
+    unit:string;        // The unit of the signal (information only).
+    bit_length:ubyte;   // Bit length of the Raw Value.
+    scale:float;        // Signal Value = Raw Value * scale (applied first).
+    offset:float;        // Signal Value = Raw Value + offset (applied second).
+
+    // Logical Value of Signal.
+    symbols:[SignalSymbol]; // List of all possible Symbols (i.e. Logical Values).
+
+    // Signals representing Binary Data.
+    byte_length:short;  // Maximum length of any encoded binary data (see Signal.data).
+}
+
+
+// Query information about a signal, the response will include all available
+//  information. Queries typically run against the Adapter, however there is
+//  no reason that an ECU could not also reply to such a message.
+table SignalQuery {
+    name:string;        // Signal Name.
+}
+table SignalQueryResponse {
+    rc:int;                     // Result of the query, 0 indicates success.
+    message:string;             // A message which might explain the failure reason.
+    encoding:SignalEncoding;    // The Signal Encoding for the requested Signal.
+
+    sent_count:uint;            // Number of times the signal was sent(/received).
+    encoding_error_count:uint;  // Number of times an encoding error was detected.
+}

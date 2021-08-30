@@ -1,0 +1,57 @@
+//***************************************************************************
+// Copyright (c) 2021 for information on the respective copyright owner
+// see the NOTICE file and/or the repository https://github.com/boschglobal/automotive-bus-schema
+//
+// SPDX-License-Identifier: Apache-2.0
+//***************************************************************************
+//
+// Interface Description for VDA Interface - Network Model - CAN
+// Network Model Can - NMC - NMCA (flatbuffers file identifier)
+//
+// IDL for Open Simulation Interface - Network Model - FlexRay
+//
+// Network Model FlexRay - NMF - NMFR (flatbuffers file identifier)
+// MIME type : application/x-open-simulation-interface-network-model; type=FlexRay;
+//
+//  TODO: Refine to match FlexRay Transceiver/Chipset Specifications.
+
+namespace NetworkModels.FlexRay;
+
+
+
+// L2 FlexRay Bus Model
+// ====================
+
+enum BusSync:byte { NoSync = 0, Sync = 1}
+
+table FlexrayStatus {
+    sync:BusSync;
+}
+
+
+
+// L3 CAN Bus Model
+// ================
+
+table FlexrayBuffer {
+    index:ubyte;
+    frame_id:ushort;
+    payload:[ubyte];        // LPDU Payload. Expected to be allocated at the
+                            //   maximum LPDU length (i.e. 256 bytes).
+    length:ubyte;           // Length of payload content (not the size of the payload vector).
+}
+
+
+
+// FlexRay Register File
+// =====================
+
+table RegisterFile {
+    status:FlexrayStatus;       // L2 Bus Status.
+    buffer:[FlexrayBuffer];     // L3 Buffers for FlexRay Messages.
+}
+
+
+root_type RegisterFile;
+file_identifier "NMFR";
+file_extension "flexray";
