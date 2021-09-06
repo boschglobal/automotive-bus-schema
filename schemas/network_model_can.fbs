@@ -27,7 +27,7 @@ namespace NetworkModels.CAN;
 // L2 CAN Bus Model
 // ================
 
-// L2 Bus Status. (TODO review these states)
+// L2 Bus Status.
 enum BusState:byte { BusOff = 0, Idle = 1, Sync = 2 }
 
 table CanStatus {
@@ -53,9 +53,9 @@ enum BufferStatus:byte { None = 0, TxDone = 1, RxDone = 2, TxError = 11, RxError
 
 // Link Protocol Data Unit (L-PDU).
 table LinkProtocolDataUnit {
-    frame_id:long;          // CAN Message ID, TODO check length, esp for CAN FD.
+    frame_id:long;          // CAN Message ID.
                             //   Tx - Frame ID
-                            //   Rx - Filtering schema (TODO: define, relates to rtr?)
+                            //   Rx - Filtering schema
     payload:[ubyte];        // LPDU Payload. Expected to be allocated at the
                             //   maximum LPDU length (i.e. 256 bytes).
     length:ubyte;           // Length of payload content (not the size of the payload vector).
@@ -63,15 +63,13 @@ table LinkProtocolDataUnit {
 
 // CAN Buffer, representation of a single CAN Tx/Rx Buffer.
 //  Structs are fixed, no schema versioning, so can be precise to a chipset, then use Union to add to RegisterFile. Perhaps?
-// TODO review for forward/backwards compatibility. Some items (LPDU) might be
-//  better represented as struct's.
 table CanBuffer {
     // Buffer/Register
     index:ubyte (key);                  // Buffer Index, maps to a Register File position (0..n).
     direction:BufferDirection = None;   // None, Tx, Rx
     status:BufferStatus = None;         // None, TxDone, RxDone, TxError, RxError
 
-    // Frame Signals (TODO are these sent using a CAN Buffer? or as features of the RegisterFile (below)).
+    // Frame Signals
     rtr:bool = 0;                       // Remote Frame request.
 
     // LPDU
@@ -98,7 +96,7 @@ enum BufferMode:byte { Register = 0, Fifo = 1 }
 table RegisterFile {
     status:CanStatus;       // L2 Bus Status.
     buffer:[CanBuffer];     // L3 Buffers for CAN Messages.
-    mode:[BufferMode];      // Buffers operate in Register or FIFO mode. (TODO Placeholder, review)
+    mode:[BufferMode];      // Buffers operate in Register or FIFO mode.
 
     // Registers, error monitoring.
     //  TEC or REC greater than 127 and lesser than 255 - Passive Error frame sent.

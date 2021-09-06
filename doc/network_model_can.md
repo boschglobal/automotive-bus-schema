@@ -1,6 +1,3 @@
-![Automotive Bus Schema](images/automotive-bus-schema_logo.png)
-
-
 <!---
   Copyright (c) 2021 for information on the respective copyright owner
   see the NOTICE file and/or the repository https://github.com/boschglobal/automotive-bus-schema
