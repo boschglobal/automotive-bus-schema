@@ -1,0 +1,99 @@
+//***************************************************************************
+// Copyright (c) 2021 for information on the respective copyright owner
+// see the NOTICE file and/or the following repository:
+//     https://github.com/boschglobal/automotive-bus-schema
+//
+// SPDX-License-Identifier: Apache-2.0
+//***************************************************************************
+
+
+/**
+    IDL for Automotive Bus - Signal Interface - Channel
+    ===================================================
+
+    Channel Messages.
+
+    Signals are sent in channels. Each channel represents a kind of Signal (e.g.
+    Physical or Simulation signals).
+
+    Signal data is encoded with related MsgPack schema SignalData. See schema
+    file 'schemas/signal/msgpack/data_payloads.yaml' for details.
+
+    MIME Type : application/x-automotive-bus; interface=signal; type=channel;
+    Flatbuffers file identifier : SICH
+*/
+
+
+include "parameter.fbs";
+
+
+namespace AutomotiveBus.SignalInterface.Channel;
+
+
+/**
+    Signal Indexing.
+ */
+table SignalLookup {
+    signal_uid:uint;        // UID of a signal, if not provided the UID will
+                            // be generated using the blake2b hash algorithm
+                            // (to 4 bytes) over the signal name.
+    name:string;            // Name of the Signal.
+    alias:[string];         // Signals can also have aliases (i.e. more than one name).
+}
+table SignalIndex {
+    indexes:[SignalLookup];
+}
+
+
+
+/**
+    Signal Messages.
+
+    MsgPack encoded Signal Data:
+        Data = [
+            [0..N], // (uint) Signal UID
+            [0..N], // (number) Signal Value - can be ommited for SignalRead.
+        ]
+    Signal Values can be encoded with any MsgPack numeric type (e.g. Integer
+    or Float).
+ */
+table SignalWrite {
+    data:[ubyte];       // MsgPack encoded Signal Data.
+    immediate:bool;     // When set this Write will be immediatly processed.
+                        // This supports Unit Testing.
+}
+table SignalRead {
+    data:[ubyte];       // MsgPack encoded Signal Data.
+}
+table SignalValue {
+    data:[ubyte];       // MsgPack encoded Signal Data.
+}
+
+
+
+/**
+    Message Construction.
+ */
+union MessageType {
+    // From channel.fbs (this file)
+    SignalWrite:SignalWrite,
+    SignalRead:SignalRead,
+    SignalValue:SignalValue,
+    SignalIndex:SignalIndex,
+    // From parameter.fbs
+    ParameterValue:AutomotiveBus.SignalInterface.Parameter.ParameterValue,
+}
+table ChannelMessage {
+    // Message metadata.
+    model_uid:uint;     // Identifes a Model within a Simulation Environment.
+                        // Value 0 is reserved for control messages.
+    message:MessageType; // The message being transmitted.
+    control_code:uint;  // Code to "authenticate" a control message.
+
+    // Response info, requested by setting token.
+    token:int;          // Client supplied token for linking Response to original Message.
+    rc:int;             // Result of the message processing, 0 indicates success.
+    response:string;    // A message which might explain the failure reason.
+}
+root_type ChannelMessage;
+file_identifier "SICH";    // Signal Interface CHannel

@@ -6,25 +6,26 @@
 -->
 
 
-## Network Model CAN
+# Automotive Bus Register Interface CAN
 
-Model  | Network Model CAN  
+## Overview
+
+Schema  | Register Interface CAN  
 :---|:---
-&ensp; | [Schema File](../schemas/network_model_can.fbs)
-MIME Type  | application/x-open-simulation-interface-network-model; type=CAN;
+&ensp; | [Schema File](../../schemas/register/can.fbs)
+MIME Type  | application/x-automotive-bus; interface=register; type=CAN;
 Data Stream | 4 byte Message Length followed by FlatBuffers Message. Repeating.  
-FlatBuffers File Identifier | NMCA
-Abbreviations  |  NM CAN, NMC, NMCA
-
-### Modeled BUS Features
+FlatBuffers File Identifier | RICA
 
 
-#### Tx/Rx FIFO(Buffer) Operation
+## Modeled BUS Features
+
+### Tx/Rx FIFO(Buffer) Operation
 
 The size and configuration of FIFO/Buffer is set when connecting to a Virtual BUS. Typically this is a limited resource and FIFO/Buffers are assigned to one of the Tx/Rx functions.
 
 
-##### TX FIFO with Priority
+#### TX FIFO with Priority
 
 * TX Queue with maximum size.
 * Messages are sent according to Message ID.
@@ -36,7 +37,7 @@ The size and configuration of FIFO/Buffer is set when connecting to a Virtual BU
   - number of unused FIFO/Buffers
 
 
-##### TX FIFO
+#### TX FIFO
 
 * TX Queue with maximum size.
 * Messages are sent in order of enqueue (i.e. circular buffer).
@@ -50,7 +51,7 @@ The size and configuration of FIFO/Buffer is set when connecting to a Virtual BU
   - number of unused FIFO/Buffers
 
 
-##### RX FIFO
+#### RX FIFO
 
 * RX Queue with maximum size.
 * Queue is cleared when ECU requests BUS Pull. ECU must handle all messages.
@@ -63,22 +64,22 @@ The size and configuration of FIFO/Buffer is set when connecting to a Virtual BU
 
 
 
-#### TEC
+### TEC
 
 
-#### REC
+### REC
 
 
-#### Active Error Frame
+### Active Error Frame
 
 
-#### Passive Error Frame
+### Passive Error Frame
 
 
-#### Overload
+### Overload
 
 
-#### Frame Request
+### Frame Request
 
 
-#### L2 Status
+### L2 Status

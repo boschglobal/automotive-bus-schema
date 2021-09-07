@@ -1,33 +1,41 @@
 //***************************************************************************
 // Copyright (c) 2021 for information on the respective copyright owner
-// see the NOTICE file and/or the repository https://github.com/boschglobal/automotive-bus-schema
+// see the NOTICE file and/or the following repository:
+//     https://github.com/boschglobal/automotive-bus-schema
 //
 // SPDX-License-Identifier: Apache-2.0
 //***************************************************************************
-//
-// IDL for Automotive Bus - Register Interface - FlexRay
-//
-// MIME type : application/x-automotive-bus; interface=register; type=FlexRay;
-// Flatbuffers file identifier : RIFR
+
+
+/**
+    IDL for Automotive Bus - Register Interface - FlexRay
+    =====================================================
+
+    MIME Type : application/x-automotive-bus; interface=register; type=FlexRay;
+    Flatbuffers file identifier : RIFR
+*/
 
 
 namespace AutomotiveBus.RegisterInterface.FlexRay;
 
 
-// L2 FlexRay Bus Model
-// ====================
-
-enum BusSync:byte { NoSync = 0, Sync = 1}
-
+/**
+    L2 FlexRay Bus Model
+    ====================
+*/
+enum BusSync:byte {
+    NoSync = 0,
+    Sync = 1
+}
 table FlexrayStatus {
     sync:BusSync;
 }
 
 
-
-// L3 CAN Bus Model
-// ================
-
+/**
+    L3 FlexRay Bus Model
+    ====================
+*/
 table FlexrayBuffer {
     index:ubyte;
     frame_id:ushort;
@@ -37,10 +45,10 @@ table FlexrayBuffer {
 }
 
 
-
-// FlexRay Register File
-// =====================
-
+/**
+    FlexRay Register File
+    =====================
+*/
 table RegisterFile {
     status:FlexrayStatus;       // L2 Bus Status.
     buffer:[FlexrayBuffer];     // L3 Buffers for FlexRay Messages.

@@ -1,41 +1,58 @@
 //***************************************************************************
 // Copyright (c) 2021 for information on the respective copyright owner
-// see the NOTICE file and/or the repository https://github.com/boschglobal/automotive-bus-schema
+// see the NOTICE file and/or the following repository:
+//     https://github.com/boschglobal/automotive-bus-schema
 //
 // SPDX-License-Identifier: Apache-2.0
 //***************************************************************************
-//
-// IDL for Automotive Bus - Register Interface - Ethernet
-//
-// MIME type : application/x-automotive-bus; interface=register; type=Ethernet;
-// Flatbuffers file identifier : RIEN
+
+
+/**
+    IDL for Automotive Bus - Register Interface - Ethernet
+    ======================================================
+
+    MIME Type : application/x-automotive-bus; interface=register; type=Ethernet;
+    Flatbuffers file identifier : RIEN
+*/
 
 
 namespace AutomotiveBus.RegisterInterface.Ethernet;
 
 
-// Ethernet Bus Model
-// ====================
-
-enum BusSync:byte { NoSync = 0, Sync = 1}
-
+/**
+    Ethernet Bus Model
+    ==================
+*/
+enum BusSync:byte {
+    NoSync = 0,
+    Sync = 1
+}
 table EthernetStatus {
     sync:BusSync;
 }
 
-// Holds data from clock system call. Used for timestamps and simulation time.
 struct TimeSpec {
+    // Holds data from clock system call. Used for timestamps and simulation time.
     sec:long;
     nsec:long;
 }
 
-// Direction (of an Ethernet Buffer), None is disabled.
-enum BufferDirection:byte { None = 0, Tx = 1, Rx = 2 }
+enum BufferDirection:byte {
+    // Direction (of an Ethernet Buffer), None is disabled.
+    None = 0,
+    Tx = 1,
+    Rx = 2
+}
 
-// Status of an Ethernet Buffer.
-enum BufferStatus:byte { None = 0, TxDone = 1, RxDone = 2, TxError = 11, RxError = 12 }
+enum BufferStatus:byte {
+    // Status of an Ethernet Buffer.
+    None = 0,
+    TxDone = 1,
+    RxDone = 2,
+    TxError = 11,
+    RxError = 12
+}
 
-// Ethernet Frame
 table EthernetFrame {
     dest_mac:[ubyte];           // Destination MAC address, 6 bytes
     src_mac:[ubyte];            // Source MAC address, 6 bytes
@@ -45,7 +62,6 @@ table EthernetFrame {
     length:ushort;              // Length of data payload.
 }
 
-// Ethernet Buffer
 table EthernetBuffer {
     index:ubyte;
     direction:BufferDirection = None;
@@ -61,9 +77,10 @@ table EthernetBuffer {
 }
 
 
-// Ethernet Register File
-// ======================
-
+/**
+    Ethernet Register File
+    ======================
+*/
 table RegisterFile {
     status:EthernetStatus;       // L1/2 Bus Status.
     buffer:[EthernetBuffer];     // Buffers for Ethernet Messages.
