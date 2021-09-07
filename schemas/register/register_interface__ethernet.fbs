@@ -5,17 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //***************************************************************************
 //
-// Interface Description for VDA Interface - Network Model - CAN
-// Network Model Can - NMC - NMCA (flatbuffers file identifier)
+// IDL for Automotive Bus - Register Interface - Ethernet
 //
-// IDL for Open Simulation Interface - Network Model - Ethernet
-//
-// Network Model Ethernet - NMEN - NMEN (flatbuffers file identifier)
-// MIME type : application/x-open-simulation-interface-network-model; type=Ethernet;
-//
+// MIME type : application/x-automotive-bus; interface=register; type=Ethernet;
+// Flatbuffers file identifier : RIEN
 
-namespace NetworkModels.Ethernet;
 
+namespace AutomotiveBus.RegisterInterface.Ethernet;
 
 
 // Ethernet Bus Model
@@ -75,5 +71,5 @@ table RegisterFile {
 
 
 root_type RegisterFile;
-file_identifier "NMEN";
+file_identifier "RIEN";
 file_extension "ethernet";

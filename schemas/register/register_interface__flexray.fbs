@@ -5,18 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //***************************************************************************
 //
-// Interface Description for VDA Interface - Network Model - CAN
-// Network Model Can - NMC - NMCA (flatbuffers file identifier)
+// IDL for Automotive Bus - Register Interface - FlexRay
 //
-// IDL for Open Simulation Interface - Network Model - FlexRay
-//
-// Network Model FlexRay - NMF - NMFR (flatbuffers file identifier)
-// MIME type : application/x-open-simulation-interface-network-model; type=FlexRay;
-//
-//  TODO: Refine to match FlexRay Transceiver/Chipset Specifications.
+// MIME type : application/x-automotive-bus; interface=register; type=FlexRay;
+// Flatbuffers file identifier : RIFR
 
-namespace NetworkModels.FlexRay;
 
+namespace AutomotiveBus.RegisterInterface.FlexRay;
 
 
 // L2 FlexRay Bus Model
@@ -53,5 +48,5 @@ table RegisterFile {
 
 
 root_type RegisterFile;
-file_identifier "NMFR";
+file_identifier "RIFR";
 file_extension "flexray";

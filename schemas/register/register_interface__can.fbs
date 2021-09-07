@@ -5,23 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //***************************************************************************
 //
-// Interface Description for VDA Interface - Network Model - CAN
-// Network Model Can - NMC - NMCA (flatbuffers file identifier)
+// IDL for Automotive Bus - Register Interface - CAN
 //
-// IDL for Open Simulation Interface - Network Model - CAN
-//
-// Network Model Can - NMC - NMCA (flatbuffers file identifier)
-// MIME type : application/x-open-simulation-interface-network-model; type=CAN;
-//
-
-namespace NetworkModels.CAN;
+// MIME type : application/x-automotive-bus; interface=register; type=CAN;
+// Flatbuffers file identifier : RICA
 
 
-// FlatBuffers Types:
-//  8 bit: byte ubyte bool
-//  16 bit: short ushort
-//  32 bit: int uint float
-//  64 bit: long ulong double
+namespace AutomotiveBus.RegisterInterface.CAN;
 
 
 // L2 CAN Bus Model
@@ -118,5 +108,5 @@ table RegisterFile {
 
 
 root_type RegisterFile;
-file_identifier "NMCA";
+file_identifier "RICA";
 file_extension "can";
