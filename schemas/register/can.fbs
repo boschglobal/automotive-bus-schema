@@ -1,48 +1,65 @@
 //***************************************************************************
 // Copyright (c) 2021 for information on the respective copyright owner
-// see the NOTICE file and/or the repository https://github.com/boschglobal/automotive-bus-schema
+// see the NOTICE file and/or the following repository:
+//     https://github.com/boschglobal/automotive-bus-schema
 //
 // SPDX-License-Identifier: Apache-2.0
 //***************************************************************************
-//
-// IDL for Automotive Bus - Register Interface - CAN
-//
-// MIME type : application/x-automotive-bus; interface=register; type=CAN;
-// Flatbuffers file identifier : RICA
+
+
+/**
+    IDL for Automotive Bus - Register Interface - CAN
+    =================================================
+
+    MIME Type : application/x-automotive-bus; interface=register; type=CAN;
+    Flatbuffers file identifier : RICA
+*/
 
 
 namespace AutomotiveBus.RegisterInterface.CAN;
 
 
-// L2 CAN Bus Model
-// ================
-
-// L2 Bus Status.
-enum BusState:byte { BusOff = 0, Idle = 1, Sync = 2 }
-
+/**
+    L2 CAN Bus Model
+    ================
+*/
+enum BusState:byte {
+    // L2 Bus Status.
+    BusOff = 0,
+    Idle = 1,
+    Sync = 2
+}
 table CanStatus {
     sync:BusState;
 }
 
 
-
-// L3 CAN Bus Model
-// ================
-
-// Holds data from clock system call. Used for timestamps and simulation time.
+/**
+    L3 CAN Bus Model
+    ================
+*/
 struct TimeSpec {
+    // Holds data from clock system call. Used for timestamps and simulation time.
     sec:long;
     nsec:long;
 }
+enum BufferDirection:byte {
+    // Direction (of a CAN Buffer), None is disabled.
+    None = 0,
+    Tx = 1,
+    Rx = 2
+}
+enum BufferStatus:byte {
+    // Status of a CAN Buffer.
+    None = 0,
+    TxDone = 1,
+    RxDone = 2,
+    TxError = 11,
+    RxError = 12
+}
 
-// Direction (of a CAN Buffer), None is disabled.
-enum BufferDirection:byte { None = 0, Tx = 1, Rx = 2 }
-
-// Status of a CAN Buffer.
-enum BufferStatus:byte { None = 0, TxDone = 1, RxDone = 2, TxError = 11, RxError = 12 }
-
-// Link Protocol Data Unit (L-PDU).
 table LinkProtocolDataUnit {
+    // Link Protocol Data Unit (L-PDU).
     frame_id:long;          // CAN Message ID.
                             //   Tx - Frame ID
                             //   Rx - Filtering schema
@@ -51,9 +68,9 @@ table LinkProtocolDataUnit {
     length:ubyte;           // Length of payload content (not the size of the payload vector).
 }
 
-// CAN Buffer, representation of a single CAN Tx/Rx Buffer.
-//  Structs are fixed, no schema versioning, so can be precise to a chipset, then use Union to add to RegisterFile. Perhaps?
 table CanBuffer {
+    // CAN Buffer, representation of a single CAN Tx/Rx Buffer.
+    //
     // Buffer/Register
     index:ubyte (key);                  // Buffer Index, maps to a Register File position (0..n).
     direction:BufferDirection = None;   // None, Tx, Rx
@@ -72,16 +89,20 @@ table CanBuffer {
 }
 
 
-// CAN Register File
-// =================
+/**
+    CAN Register File
+    =================
 
-// Different CAN Transceivers will have different number of Buffers in their
-//  Register File. The "index" of each Buffer should be initialized (depending on
-//  the mode of operation, a partial Register File might be sent, in which case
-//  the buffer.index would be needed to marshal data to correct locations).
-
-// Register Mode.
-enum BufferMode:byte { Register = 0, Fifo = 1 }
+    Different CAN Transceivers will have different number of Buffers in their
+    Register File. The "index" of each Buffer should be initialized (depending on
+    the mode of operation, a partial Register File might be sent, in which case
+    the buffer.index would be needed to marshal data to correct locations).
+*/
+enum BufferMode:byte {
+    // Indicate how the buffers are operating.
+    Register = 0,
+    Fifo = 1
+}
 
 table RegisterFile {
     status:CanStatus;       // L2 Bus Status.
@@ -104,7 +125,6 @@ table RegisterFile {
     timestamp:TimeSpec;         // Time since Linux epoch, in uSec.
     simulation_time:TimeSpec;   // Simulation time, in uSec.
 }
-
 
 
 root_type RegisterFile;
