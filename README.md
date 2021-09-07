@@ -11,12 +11,15 @@
 
 ## Introduction
 This is a collection of schemas in the Google FlatBuffers IDL for describing automotive network communications within a virtualized simulation environment.
- Currently buffer representations of CAN, FlexRay, Ethernet and Encoded Signals at the level of a Communication Matrix definition are provided.
+
+Currently buffer representations of CAN, FlexRay, Ethernet and Encoded Signals at the level of a Communication Matrix definition are provided.
+
 
 ## Project structure
 ```
 L- docs        Documentation
 L- schemas     Schemas of the Standard
+L- docker      Supporting build environments
 
 ```
 

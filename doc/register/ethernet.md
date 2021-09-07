@@ -5,21 +5,21 @@
   SPDX-License-Identifier: Apache-2.0
 -->
 
+# Automotive Bus Register Interface Ethernet
 
-## Network Model Ethernet
+## Overview
 
-Model  | Network Model Ethernet  
+Schema  | Register Interface Ethernet  
 :---|:---
-&ensp; | [Schema File](../schemas/network_model_ethernet.fbs)
-MIME Type  | application/x-open-simulation-interface-network-model; type=Ethernet;
+&ensp; | [Schema File](../../schemas/register/ethernet.fbs)
+MIME Type  | application/x-automotive-bus; interface=register; type=Ethernet;
 Data Stream | 4 byte Message Length followed by FlatBuffers Message. Repeating.  
-FlatBuffers File Identifier | NMEN
-Abbreviations  |  NM Ethernet, NMEN
+FlatBuffers File Identifier | RIEN
 
 
-### Modeled BUS Features
+## Modeled BUS Features
 
-#### Ethernet Frame
+### Ethernet Frame
 
 Ethernet Frame  | 68 - 1522 bytes  
 --|--
