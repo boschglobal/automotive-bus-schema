@@ -1,0 +1,65 @@
+//***************************************************************************
+// Copyright (c) 2021 for information on the respective copyright owner
+// see the NOTICE file and/or the following repository:
+//     https://github.com/boschglobal/automotive-bus-schema
+//
+// SPDX-License-Identifier: Apache-2.0
+//***************************************************************************
+
+
+/**
+    IDL for Automotive Bus - Signal Interface - Parameter
+    =====================================================
+
+    Parameter Messages.
+
+    Parameter data is encoded with related MsgPack schema ParameterData. See
+    schema file 'schemas/signal/msgpack/data_payloads.yaml' for details.
+
+    MIME Type : application/x-automotive-bus; interface=signal; type=parameter;
+    Flatbuffers file identifier : SIPA
+*/
+
+
+namespace AutomotiveBus.SignalInterface.Parameter;
+
+
+/**
+    Parameter Messages
+    ==================
+
+    MsgPack encoded Parameter Data:
+        Data = {
+            Parameter Name: Parameter Value, // (string): (number)
+        }
+    Parameter Values can be encoded with any MsgPack numeric
+    type (i.e. Integer or Float).
+*/
+table ParameterWrite {  // Configuration_Client -> SimBus
+    data:[ubyte];       // MsgPack encoded Parameter Data.
+}
+table ParameterValue {  // SimBus -> Configuration_Client
+    data:[ubyte];       // MsgPack encoded Parameter Data.
+}
+
+
+/**
+    Message Construction.
+*/
+union MessageType  {
+    ParameterWrite:ParameterWrite,
+}
+table ParameterMessage {
+    // Message metadata.
+    model_uid:uint;     // Identifes a Model within a Simulation Environment.
+                        // Value 0 is reserved for control messages.
+    message:MessageType; // The message being transmitted.
+    control_code:uint;  // Code to "authenticate" a control message.
+
+    // Response info, requested by setting token.
+    token:int;          // Client supplied token for linking Response to original Message.
+    rc:int;             // Result of the message processing, 0 indicates success.
+    response:string;    // A message which might explain the failure reason.
+}
+root_type ParameterMessage;
+file_identifier "SIPA";    // Signal Interface PArameter

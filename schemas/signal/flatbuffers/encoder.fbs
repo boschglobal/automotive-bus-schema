@@ -1,0 +1,100 @@
+//***************************************************************************
+// Copyright (c) 2021 for information on the respective copyright owner
+// see the NOTICE file and/or the following repository:
+//     https://github.com/boschglobal/automotive-bus-schema
+//
+// SPDX-License-Identifier: Apache-2.0
+//***************************************************************************
+
+
+/**
+    IDL for Automotive Bus - Signal Interface - Encoder
+    ===================================================
+
+    Encoder Messages.
+
+    MIME Type : application/x-automotive-bus; interface=signal; type=encoder;
+    Flatbuffers file identifier : SIEN
+*/
+
+
+namespace AutomotiveBus.SignalInterface.Encoder;
+
+
+/**
+    Encoder : K-Matrix
+    ==================
+
+    The following Messages describe the K-Matrix encoding.
+*/
+table KmatrixRawEncoding {
+    min:ulong;              // Minimum expected raw value.
+    max:ulong;              // Maximum expected raw value.
+    length:ubyte;           // Length in bits of the raw value.
+}
+
+table KmatrixPhysicalEncoding {
+    // A physical value is calculated with this encoding as follows:
+    //   physical value = (raw value * _scale_) + _offset_:
+    //
+    // The range of a physical value can be limited by _min_ and _max_.
+    min:float;              // Indicates the minimum value.
+    max:float;              // Indicate the maximum value.
+    unit:string;            // Information only.
+    offset:float;           // Physical Value = Raw Value * scale (applied first).
+    scale:float;            // Physical Value = Raw Value + offset (applied second).
+}
+
+table KmatrixLogicalEncoding {
+    value:ulong;            // Raw value.
+    name:string;            // Logical value/meaning.
+}
+
+table KmatrixSignalEncoding {
+    // A K-Matrix signal encoding represents a conversion from a raw signal
+    // value (unsigned integer) to either a (in order or priority):
+    //   - logical signal value (unsigned integer) representing a state
+    //   - physical signal value (float)
+    raw:KmatrixRawEncoding;
+    physical:KmatrixPhysicalEncoding;
+    logical:[KmatrixLogicalEncoding];
+}
+
+table KmatrixSignal {
+    name:string;            // Name of the Signal. If not provided, use the UID.
+    uid:uint;               // UID of a signal, if not provided the UID will
+                            // be generated using the blake2b hash algorithm
+                            // (to 4 bytes) and interpreted as a uint.
+    encoding:KmatrixSignalEncoding; // The signal encoding.
+}
+
+table KmatrixEncoder {
+    signals:[KmatrixSignal];
+}
+
+
+
+/**
+    Encoder Messages
+    ================
+
+    These messages define a generic Signal Encoder which will reference a
+    specific Signal Encoding.
+*/
+union MessageType  {
+    KmatrixEncoder:KmatrixEncoder,
+}
+table EncoderMessage {
+    // Message metadata.
+    model_uid:uint;     // Identifes a Model within a Simulation Environment.
+                        // Value 0 is reserved for control messages.
+    message:MessageType; // The message being transmitted.
+    control_code:uint;  // Code to "authenticate" a control message.
+
+    // Response info, requested by setting token.
+    token:int;          // Client supplied token for linking Response to original Message.
+    rc:int;             // Result of the message processing, 0 indicates success.
+    response:string;    // A message which might explain the failure reason.
+}
+root_type EncoderMessage;
+file_identifier "SIEN";    // Signal Interface ENcoder
