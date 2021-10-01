@@ -13,7 +13,7 @@
 Schema  | Register Interface CAN  
 :---|:---
 &ensp; | [Schema File](../../schemas/register/can.fbs)
-MIME Type  | application/x-automotive-bus; interface=register; type=CAN;
+MIME Type  | application/x-automotive-bus; interface=register; type=can;
 Data Stream | 4 byte Message Length followed by FlatBuffers Message. Repeating.  
 FlatBuffers File Identifier | RICA
 

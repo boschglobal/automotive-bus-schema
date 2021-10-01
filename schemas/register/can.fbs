@@ -11,12 +11,12 @@
     IDL for Automotive Bus - Register Interface - CAN
     =================================================
 
-    MIME Type : application/x-automotive-bus; interface=register; type=CAN;
+    MIME Type : application/x-automotive-bus; interface=register; type=can;
     Flatbuffers file identifier : RICA
 */
 
 
-namespace AutomotiveBus.RegisterInterface.CAN;
+namespace AutomotiveBus.RegisterInterface.Can;
 
 
 /**

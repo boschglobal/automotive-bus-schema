@@ -11,7 +11,7 @@
     IDL for Automotive Bus - Register Interface - Ethernet
     ======================================================
 
-    MIME Type : application/x-automotive-bus; interface=register; type=Ethernet;
+    MIME Type : application/x-automotive-bus; interface=register; type=ethernet;
     Flatbuffers file identifier : RIEN
 */
 

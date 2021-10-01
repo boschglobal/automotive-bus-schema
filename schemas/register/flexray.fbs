@@ -11,7 +11,7 @@
     IDL for Automotive Bus - Register Interface - FlexRay
     =====================================================
 
-    MIME Type : application/x-automotive-bus; interface=register; type=FlexRay;
+    MIME Type : application/x-automotive-bus; interface=register; type=flexray;
     Flatbuffers file identifier : RIFR
 */
 
