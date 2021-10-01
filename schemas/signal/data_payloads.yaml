@@ -19,6 +19,21 @@ info:
   version: 1.0
 components:
   schemas:
+    SignalUidList:
+      description: Signal UID List
+      type: array
+      items:
+        description: Signal UID
+        anyOf:
+          - type: integer
+          - type: number
+    SignalValueList:
+      description: Signal Value List
+      type: array
+      items:
+        description: Signal Value
+        type: integer
+        format: uint32
     SignalData:
       description: MsgPack encoded Signal Data. Number of elements in each nested array should be identical.
       example: Data = [[0..N],[0..N]]
@@ -26,19 +41,9 @@ components:
       minItems: 1
       maxItems: 2
       items:
-        type: array
-        required: true
-        items:
-          description: Signal UID
-          type: integer
-          format: uint32
-          minimum: 0
-        type: array
-        items:
-          description: Signal Value - can be omitted for SignalRead.
-          anyOf:
-            - type: integer
-            - type: number
+        oneOf:
+          - $ref: '#/components/schemas/SignalUidList'
+          - $ref: '#/components/schemas/SignalValueList'
     ParameterData:
       description: MsgPack encoded Parameter Data.
       type: object
