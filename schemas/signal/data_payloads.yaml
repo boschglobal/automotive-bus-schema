@@ -31,7 +31,7 @@ components:
         items:
           description: Signal UID
           type: integer
-          format: int32
+          format: uint32
           minimum: 0
         type: array
         items:
