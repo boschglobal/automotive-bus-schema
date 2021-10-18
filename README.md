@@ -20,7 +20,6 @@ Currently buffer representations of CAN, FlexRay, Ethernet and Encoded Signals a
 L- docs        Documentation
 L- schemas     Schemas of the Standard
 L- docker      Supporting build environments
-
 ```
 
 
