@@ -16,7 +16,7 @@
 */
 
 
-namespace AutomotiveBus.RegisterInterface.FlexRay;
+namespace AutomotiveBus.Register.FlexRay;
 
 
 /**

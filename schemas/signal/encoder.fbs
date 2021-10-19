@@ -18,7 +18,7 @@
 */
 
 
-namespace AutomotiveBus.SignalInterface.Encoder;
+namespace AutomotiveBus.Signal.Encoder;
 
 
 /**

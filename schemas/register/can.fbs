@@ -16,7 +16,7 @@
 */
 
 
-namespace AutomotiveBus.RegisterInterface.Can;
+namespace AutomotiveBus.Register.Can;
 
 
 /**

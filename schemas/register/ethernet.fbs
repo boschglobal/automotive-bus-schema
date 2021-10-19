@@ -16,7 +16,7 @@
 */
 
 
-namespace AutomotiveBus.RegisterInterface.Ethernet;
+namespace AutomotiveBus.Register.Ethernet;
 
 
 /**
