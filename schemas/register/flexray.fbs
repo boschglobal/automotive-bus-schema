@@ -27,8 +27,21 @@ enum BusSync:byte {
     NoSync = 0,
     Sync = 1
 }
+
 table FlexrayStatus {
-    sync:BusSync;
+    sync:BusSync = NoSync;
+}
+
+struct TimeSpec {
+    // Used for timestamps and simulation time.
+    psec10:long;            // Number of tens of picoseconds (resolution 1e-11 second).
+}
+
+struct MessageTiming {
+    // Set of timestamps describing the entire timing of a message.
+    send_request:TimeSpec;  // Timestamp  of send request (virtual time).
+    arbitration:TimeSpec;   // /imestamp  of message arbitration (virtual time).
+    reception:TimeSpec;     // Timestamp  of message reception (virtual time).
 }
 
 
@@ -36,12 +49,55 @@ table FlexrayStatus {
     L3 FlexRay Bus Model
     ====================
 */
-table FlexrayBuffer {
-    index:ubyte;
-    frame_id:ushort;
-    payload:[ubyte];        // LPDU Payload. Expected to be allocated at the
-                            //   maximum LPDU length (i.e. 256 bytes).
-    length:ubyte;           // Length of payload content (not the size of the payload vector).
+enum BufferDirection:byte {
+    // Direction, None is disabled.
+    Tx = 0,
+    Rx = 1
+}
+
+enum BufferStatus:byte {
+    // Status of an FlexRay Buffer.
+    None = 0,
+    RxError = 1
+}
+
+enum FrameChannel:byte {
+    // Frames to be sent can be ChA, ChB or Both.
+    // Frames received can be ChA or ChB but not Both!
+    // Reason: if the sender says Both then the receiver will receive two
+    // copies of the frame, the first with ChA and the second with ChB.
+    None = 0,
+    ChA = 1,
+    ChB = 2,
+    Both = 3
+}
+
+enum FrameIndicatorBits:ubyte {
+    // Indicator bits of the frame.
+    Startup = 1,
+    Sync = 2,
+    NotNull = 4,
+    Payload = 8,
+    Reserved = 16
+}
+
+table Frame {
+    // FlexRay Frame.
+    frame_id:ushort = 1;    // Frame ID, must be 1 or higher.
+    indicators:ubyte = 12;  // Combination of frame indicator bits (see FrameIndicatorBits).
+    length:ubyte = 1;       // Length of data payload in 16 bit words (!), must be 0-127.
+    data:[ubyte];           // Payload, 0 to 254 bytes.
+}
+
+table MetaFrame {
+    // Frame + meta information from/to interface.
+    status:BufferStatus;
+    direction:BufferDirection = Tx;
+    channel_mask:ubyte = 1;             // Channel information.
+    cycle_period:ubyte = 1;             // Can be 1,2,4,8,16,32 or 64.
+    cycle_offset:ubyte = 0;             // Can be 0 to cycle_period-1.
+    frame:Frame;                        // The frame itself.
+    timing:MessageTiming;               // Timing of the message.
 }
 
 
@@ -50,8 +106,8 @@ table FlexrayBuffer {
     =====================
 */
 table RegisterFile {
-    status:FlexrayStatus;       // L2 Bus Status.
-    buffer:[FlexrayBuffer];     // L3 Buffers for FlexRay Messages.
+    // The register file is expected to operate in FIFO mode.
+    buffer:[MetaFrame];     // Buffer of MetaFrames.
 }
 
 

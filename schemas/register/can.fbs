@@ -29,8 +29,21 @@ enum BusState:byte {
     Idle = 1,
     Sync = 2
 }
+
 table CanStatus {
-    sync:BusState;
+    sync:BusState = Idle;
+}
+
+struct TimeSpec {
+    // Used for timestamps and simulation time.
+    psec10:long;            // Number of tens of picoseconds (resolution 1e-11 second).
+}
+
+struct MessageTiming {
+    // Set of timestamps describing the entire timing of a message.
+    send_request:TimeSpec;  // Timestamp  of send request (virtual time).
+    arbitration:TimeSpec;   // /imestamp  of message arbitration (virtual time).
+    reception:TimeSpec;     // Timestamp  of message reception (virtual time).
 }
 
 
@@ -38,94 +51,53 @@ table CanStatus {
     L3 CAN Bus Model
     ================
 */
-struct TimeSpec {
-    // Holds data from clock system call. Used for timestamps and simulation time.
-    sec:long;
-    nsec:long;
-}
 enum BufferDirection:byte {
-    // Direction (of a CAN Buffer), None is disabled.
-    None = 0,
-    Tx = 1,
-    Rx = 2
+    // Direction of a CAN Buffer.
+    Tx = 0,
+    Rx = 1
 }
+
 enum BufferStatus:byte {
     // Status of a CAN Buffer.
     None = 0,
-    TxDone = 1,
-    RxDone = 2,
-    TxError = 11,
-    RxError = 12
+    RxError = 1
 }
 
-table LinkProtocolDataUnit {
-    // Link Protocol Data Unit (L-PDU).
-    frame_id:long;          // CAN Message ID.
-                            //   Tx - Frame ID
-                            //   Rx - Filtering schema
-    payload:[ubyte];        // LPDU Payload. Expected to be allocated at the
-                            //   maximum LPDU length (i.e. 256 bytes).
-    length:ubyte;           // Length of payload content (not the size of the payload vector).
+enum FrameType:byte{
+    StandardFrame = 0,  // Classicall CAN, payload up to 8 bytes.
+    ExtendedFrame = 1   // CAN FD, payload up to 64 bytes.
 }
 
-table CanBuffer {
-    // CAN Buffer, representation of a single CAN Tx/Rx Buffer.
-    //
-    // Buffer/Register
-    index:ubyte (key);                  // Buffer Index, maps to a Register File position (0..n).
-    direction:BufferDirection = None;   // None, Tx, Rx
-    status:BufferStatus = None;         // None, TxDone, RxDone, TxError, RxError
+table Frame {
+    // CAN Frame.
+    frame_id:uint;      // CAN Message ID.
+    payload:[ubyte];    // Payload of the CAN frame, covered by DLC. Can be
+                        // longer than the payload length specified by DLC, but
+                        // must not be shorter.
+    length:ubyte;       // Length of payload content posssible values as
+                        // defined by CAN DLC spec: 0...8,12,16,20,24,32,48,64.
+    rtr:bool;           // Indicates a Remote Frame request.
+    frame_type:FrameType = StandardFrame;
+}
 
-    // Frame Signals
-    rtr:bool = 0;                       // Remote Frame request.
-
-    // LPDU
-    lpdu:LinkProtocolDataUnit;          // LPDU Frame.
-
-    // Simulation Environment - The following values are injected/modified by
-    //  the simulation environment and for FMU's are information only.
-    timestamp:TimeSpec (required);          // Time since Linux epoch, in uSec.
-    simulation_time:TimeSpec (required);    // Simulation time, in uSec.
+table MetaFrame {
+    // Frame + meta information from/to interface.
+    status:BufferStatus;
+    direction:BufferDirection = Tx;
+    can_fd_enabled:bool;    // CanFD enabled.
+    frame:Frame;            // The frame itself.
+    timing:MessageTiming;   // Timing of the message.
 }
 
 
 /**
     CAN Register File
     =================
-
-    Different CAN Transceivers will have different number of Buffers in their
-    Register File. The "index" of each Buffer should be initialized (depending on
-    the mode of operation, a partial Register File might be sent, in which case
-    the buffer.index would be needed to marshal data to correct locations).
 */
-enum BufferMode:byte {
-    // Indicate how the buffers are operating.
-    Register = 0,
-    Fifo = 1
-}
-
 table RegisterFile {
-    status:CanStatus;       // L2 Bus Status.
-    buffer:[CanBuffer];     // L3 Buffers for CAN Messages.
-    mode:[BufferMode];      // Buffers operate in Register or FIFO mode.
-
-    // Registers, error monitoring.
-    //  TEC or REC greater than 127 and lesser than 255 - Passive Error frame sent.
-    //  TEC and REC lesser than 128 - Active Error frame sent.
-    //  TEC is greater than 255 - no frames sent, node BusState set to BusOff
-    rec:int = 0;            // REC receive error counter.
-    tec:int = 0;            // TEC Transmit error counter.
-    active_error:bool = 0;  // Signal to send an Active Error frame.
-    passive_error:bool = 0; // Signal to send an Passive Error frame.
-    overload:bool = 0;      // Signal to send an Overload frame.
-
-    // The following values are injected/modified by the simulation environment
-    //  and for FMU's are information only.
-    ecu_id:int = 0;             // UID for this ECU within the stimulation.
-    timestamp:TimeSpec;         // Time since Linux epoch, in uSec.
-    simulation_time:TimeSpec;   // Simulation time, in uSec.
+    // The register file is expected to operate in FIFO mode.
+    buffer:[MetaFrame];     // Buffer of MetaFrames.
 }
-
 
 root_type RegisterFile;
 file_identifier "RICA";
