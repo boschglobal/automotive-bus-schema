@@ -13,7 +13,7 @@
 Schema  | Register Interface FlexRay  
 :---|:---
 &ensp; | [Schema File](../../schemas/register/flexray.fbs)
-MIME Type  | application/x-automotive-bus; interface=register; type=FlexRay;
+MIME Type  | application/x-automotive-bus; interface=register; type=flexray;
 Data Stream | 4 byte Message Length followed by FlatBuffers Message. Repeating.  
 FlatBuffers File Identifier | RIFR
 

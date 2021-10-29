@@ -21,7 +21,7 @@
 */
 
 
-namespace AutomotiveBus.SignalInterface.Parameter;
+namespace AutomotiveBus.Signal.Parameter;
 
 
 /**

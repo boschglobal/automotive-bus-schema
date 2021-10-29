@@ -11,12 +11,12 @@
     IDL for Automotive Bus - Register Interface - Ethernet
     ======================================================
 
-    MIME Type : application/x-automotive-bus; interface=register; type=Ethernet;
+    MIME Type : application/x-automotive-bus; interface=register; type=ethernet;
     Flatbuffers file identifier : RIEN
 */
 
 
-namespace AutomotiveBus.RegisterInterface.Ethernet;
+namespace AutomotiveBus.Register.Ethernet;
 
 
 /**
@@ -27,53 +27,63 @@ enum BusSync:byte {
     NoSync = 0,
     Sync = 1
 }
+
 table EthernetStatus {
     sync:BusSync;
 }
 
 struct TimeSpec {
-    // Holds data from clock system call. Used for timestamps and simulation time.
-    sec:long;
-    nsec:long;
+    // Used for timestamps and simulation time.
+    psec10:long;            // Number of tens of picoseconds (resolution 1e-11 second).
+}
+
+struct MessageTiming {
+    // Set of timestamps describing the entire timing of a message.
+    send_request:TimeSpec;  // Timestamp  of send request (virtual time).
+    arbitration:TimeSpec;   // /imestamp  of message arbitration (virtual time).
+    reception:TimeSpec;     // Timestamp  of message reception (virtual time).
 }
 
 enum BufferDirection:byte {
-    // Direction (of an Ethernet Buffer), None is disabled.
-    None = 0,
-    Tx = 1,
-    Rx = 2
+    // Direction, None is disabled.
+    Tx = 0,
+    Rx = 1
 }
 
 enum BufferStatus:byte {
     // Status of an Ethernet Buffer.
     None = 0,
-    TxDone = 1,
-    RxDone = 2,
-    TxError = 11,
-    RxError = 12
+    RxError = 1
 }
 
-table EthernetFrame {
-    dest_mac:[ubyte];           // Destination MAC address, 6 bytes
-    src_mac:[ubyte];            // Source MAC address, 6 bytes
-    vlan_tag:[ubyte];           // VLAN tag, 4 bytes
-    type:[ubyte];               // Type, 2 bytes
-    data:[ubyte];               // Payload, 42 - 1497 bytes
-    length:ushort;              // Length of data payload.
+
+table Frame {
+    // Ethernet Frame.
+    // Original Ethernet frames without IEEE 802.3q VLAN extension are NOT supported!
+    dest_mac:[ubyte];       // Destination MAC address, 6 bytes.
+    src_mac:[ubyte];        // Source MAC address, 6 bytes.
+    vlan_tag:ulong;         // VLAN tag, 4 bytes, Little Endian:
+                            //   TPID: 16 bits:31...16 (0x8100 for IEEE 802.3q
+                            //     Ethernet with VLAN extension)
+                            //   PCP: 3 bits:  15...13
+                            //   DEI: 1 bit:   12
+                            //   VID: 12 bits: 11...0
+    ether_type:ushort;      // EtherType, 2 bytes, Little Endian: e.g. 0x0800
+                            // for IPv4 (LE 1st byte: 0x00, 2nd byte: 0x80).
+    data:[ubyte];           // Payload, 42 - 1497 bytes.
+    length:ushort;          // Length of payload in bytes. If the total length
+                            // of header+payload is less than 64 bytes then
+                            // the interface implementation must add padding
+                            // bytes to meet the requirement about minimal
+                            // frame length.
 }
 
-table EthernetBuffer {
-    index:ubyte;
-    direction:BufferDirection = None;
-    status:BufferStatus = None;
-
-    // Frame
-    frame:EthernetFrame;                // Ethernet Frame.
-
-    // Simulation Environment - The following values are injected/modified by
-    //  the simulation environment and for FMU's are information only.
-    timestamp:TimeSpec (required);          // Time since Linux epoch, in uSec.
-    simulation_time:TimeSpec (required);    // Simulation time, in uSec.
+table MetaFrame {
+    // Frame + meta information from/to interface.
+    status:BufferStatus;
+    direction:BufferDirection = Tx;
+    frame:Frame;                        // The frame itself.
+    timing:MessageTiming;               // Timing of the message.
 }
 
 
@@ -82,8 +92,8 @@ table EthernetBuffer {
     ======================
 */
 table RegisterFile {
-    status:EthernetStatus;       // L1/2 Bus Status.
-    buffer:[EthernetBuffer];     // Buffers for Ethernet Messages.
+    // The register file is expected to operate in FIFO mode.
+    buffer:[MetaFrame];     // Buffer of MetaFrames.
 }
 
 

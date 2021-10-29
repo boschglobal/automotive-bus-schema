@@ -12,7 +12,7 @@
 Schema  | Register Interface Ethernet  
 :---|:---
 &ensp; | [Schema File](../../schemas/register/ethernet.fbs)
-MIME Type  | application/x-automotive-bus; interface=register; type=Ethernet;
+MIME Type  | application/x-automotive-bus; interface=register; type=ethernet;
 Data Stream | 4 byte Message Length followed by FlatBuffers Message. Repeating.  
 FlatBuffers File Identifier | RIEN
 
