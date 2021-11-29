@@ -81,7 +81,7 @@ union MessageType {
     SignalValue:SignalValue,
     SignalIndex:SignalIndex,
     // From parameter.fbs
-    ParameterValue:AutomotiveBus.SignalInterface.Parameter.ParameterValue,
+    ParameterValue:AutomotiveBus.Signal.Parameter.ParameterValue,
 }
 table ChannelMessage {
     // Message metadata.
