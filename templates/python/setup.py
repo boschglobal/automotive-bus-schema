@@ -14,7 +14,7 @@ install_requires = [
     'flatbuffers',
 ]
 
-PACKAGE_NAME = "automotivebus"
+PACKAGE_NAME = "automotive-bus-schema"
 
 DESCRIPTION = """
 Automotive Bus Schema

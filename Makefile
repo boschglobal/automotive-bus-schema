@@ -16,6 +16,7 @@ PYTHON_BUILDER_IMAGE ?= python-builder:latest
 
 ###############
 ## Build parameters.
+SCHEMA_LIB = automotive_bus_schema
 PLATFORM = linux64
 DIST_DIR = $(shell pwd -P)/dist
 OUT_DIR = $(shell pwd -P)/dist/$(PACKAGE_NAME)
@@ -31,8 +32,8 @@ FLATCC = flatcc
 FLATCC_SRC_RUNTIME_DIR = /usr/local/src/flatcc/src/runtime
 FLATCC_SRC_INCLUDE_DIR = /usr/local/include/flatcc
 FLATCC_SRC_LICENSE_DIR = /usr/local/src/flatcc
-FLATCC_DIST_RUNTIME_DIR = $(FBS_OUT_DIR)/c/src/flatcc
-FLATCC_DIST_INCLUDE_DIR = $(FBS_OUT_DIR)/c/include/flatcc
+FLATCC_DIST_RUNTIME_DIR = $(FBS_OUT_DIR)/c/$(SCHEMA_LIB)/flatcc/src
+FLATCC_DIST_INCLUDE_DIR = $(FBS_OUT_DIR)/c/$(SCHEMA_LIB)/flatcc/include/flatcc
 # MsgPack
 MPK_OUT_DIR = $(OUT_DIR)/msgpack
 MPK_SCHEMA_DIR = $(shell pwd -P)/schemas
@@ -60,13 +61,13 @@ builders:
 	done;
 
 build:
-	docker run -it --rm \
+	@docker run -it --rm \
 		--volume $$(pwd):/tmp/repo \
 		--env PACKAGE_VERSION=$(PACKAGE_VERSION) \
 		--workdir /tmp/repo \
 		$(FLATC_BUILDER_IMAGE) \
 		/bin/bash -c "make fbs"
-	docker run -it --rm \
+	@docker run -it --rm \
 		--volume $$(pwd):/tmp/repo \
 		--env PIP_EXTRA_INDEX_URL=$(PIP_EXTRA_INDEX_URL) \
 		--env PACKAGE_VERSION=$(PACKAGE_VERSION) \
@@ -83,14 +84,14 @@ build:
 $(FBS_SCHEMA_SOURCES):
 	@echo $@
 	# Setup the directory structure.
-	mkdir -p $(FBS_OUT_DIR)/c/$$(basename $$(dirname $@))
-	mkdir -p $(FBS_OUT_DIR)/cpp/$$(basename $$(dirname $@))
+	mkdir -p $(FBS_OUT_DIR)/c/$(SCHEMA_LIB)/$$(basename $$(dirname $@))
+	mkdir -p $(FBS_OUT_DIR)/cpp/$(SCHEMA_LIB)/$$(basename $$(dirname $@))
 	mkdir -p $(FBS_OUT_DIR)/fbs/$$(basename $$(dirname $@))
 	mkdir -p $(FBS_OUT_DIR)/fbs/$$(basename $$(dirname $@))
 	mkdir -p $(FBS_OUT_DIR)/fbs/$$(basename $$(dirname $@))
 	# Generate Flatbuffers code.
-	$(FLATCC) -a $(FLATC_OPTIONS) -o $(FBS_OUT_DIR)/c/$$(basename $$(dirname $@)) $@
-	$(FLATC) --cpp $(FLATC_OPTIONS) --filename-suffix '' -o $(FBS_OUT_DIR)/cpp/$$(basename $$(dirname $@)) $@
+	$(FLATCC) -a $(FLATC_OPTIONS) -o $(FBS_OUT_DIR)/c/$(SCHEMA_LIB)/$$(basename $$(dirname $@)) $@
+	$(FLATC) --cpp $(FLATC_OPTIONS) --filename-suffix '' -o $(FBS_OUT_DIR)/cpp/$(SCHEMA_LIB)/$$(basename $$(dirname $@)) $@
 	$(FLATC) --python $(FLATC_OPTIONS) -o $(FBS_OUT_DIR)/python $@
 	$(FLATC) --lua $(FLATC_OPTIONS) -o $(FBS_OUT_DIR)/lua $@
 	# Copy over the original Flatbuffer schemas.
@@ -123,10 +124,10 @@ dist_package:
 	mkdir -p $(OUT_DIR)
 	echo $(PACKAGE_VERSION) > $(OUT_DIR)/VERSION
 
-	tar -czvf $(DIST_DIR)/$(PACKAGE_FILENAME) -C $(DIST_DIR) $(PACKAGE_NAME)
+	tar -czf $(DIST_DIR)/$(PACKAGE_FILENAME) -C $(DIST_DIR) $(PACKAGE_NAME)
 
 dist:
-	docker run -it --rm \
+	@docker run -it --rm \
 		--volume $$(pwd):/tmp/repo \
 		--env PIP_EXTRA_INDEX_URL=$(PIP_EXTRA_INDEX_URL) \
 		--env PACKAGE_VERSION=$(PACKAGE_VERSION) \
@@ -139,6 +140,7 @@ dist:
 	@echo "--------------------------"
 	@ls -1sh $(DIST_DIR)/*.*
 	@ls -1sh $(PYTHON_DIST_DIR)/dist/*.*
+
 
 clean:
 	-@rm -rf $(DIST_DIR)
