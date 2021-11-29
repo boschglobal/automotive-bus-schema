@@ -1,4 +1,4 @@
-FROM debian:buster-slim AS builder
+FROM debian:bullseye-slim AS builder
 
 
 # =========================
@@ -30,18 +30,20 @@ RUN apt-get -y update; \
 
 # FlatBuffer Build
 # ================
-# https://github.com/google/flatbuffers/archive/refs/tags/v1.12.0.tar.gz
+# https://github.com/google/flatbuffers/archive/refs/tags/v2.0.0.tar.gz
 ARG FLATBUFFERS_ARCHIVE_BASE_URL="https://github.com/google/flatbuffers/archive/refs/tags"
-ARG FLATBUFFERS_ARCHIVE_TAG="v1.12.0"
+ARG FLATBUFFERS_ARCHIVE_TAG="v2.0.0"
 ARG FLATBUFFERS_BUILD_TYPE="Release"
-ARG FLATBUFFERS_USE_CLANG="false"
 
 RUN curl -fSL "${FLATBUFFERS_ARCHIVE_BASE_URL}/${FLATBUFFERS_ARCHIVE_TAG}.tar.gz" -o flatbuffers.tar.gz \
     && tar xzf flatbuffers.tar.gz \
     && cd flatbuffers-* \
-    && cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=${FLATBUFFERS_BUILD_TYPE} . \
+    && cmake -G "Unix Makefiles"  \
+        -DFLATBUFFERS_CXX_FLAGS="-Wno-error" \
+        -DFLATBUFFERS_BUILD_TESTS=OFF \
+        -DCMAKE_BUILD_TYPE=${FLATBUFFERS_BUILD_TYPE} \
+        . \
     && make \
-    && make test \
     && make install \
     && cp src/idl_parser.cpp src/idl_gen_text.cpp /usr/local/include/flatbuffers
 
@@ -56,17 +58,14 @@ RUN curl -fSL "${FLATCC_ARCHIVE_BASE_URL}/${FLATCC_ARCHIVE_TAG}.tar.gz" -o flatc
     && tar xzf flatcc.tar.gz \
     && mv flatcc-* flatcc \
     && cd flatcc \
-    && env $( if [ "${FLATBUFFERS_USE_CLANG}" = "true" ] ; then echo "CC=/usr/bin/clang CXX=/usr/bin/clang++ " ; fi) \
-        ./scripts/initbuild.sh make \
-    && env $( if [ "${FLATBUFFERS_USE_CLANG}" = "true" ] ; then echo "CC=/usr/bin/clang CXX=/usr/bin/clang++ " ; fi) \
-       ./scripts/build.sh
-
+    && ./scripts/initbuild.sh make \
+    && ./scripts/build.sh
 
 
 # =========================
 # Construct the final image
 # =========================
-FROM debian:buster-slim
+FROM debian:bullseye-slim
 
 
 # Setup basic tools
@@ -76,7 +75,10 @@ RUN apt-get -y update; \
     apt-get -y install --no-install-recommends \
         build-essential \
         curl \
+        cmake \
+        gcc \
         git \
+        libmsgpack-dev \
         make \
         zip \
     && \

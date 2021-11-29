@@ -71,7 +71,13 @@ After compiling the output can be integrated in the simulation model code. Pleas
 
 ## Dependencies
 
-Schemas in this repository require [FlatBuffers](https://github.com/google/flatbuffers) v1.12.0 and [flatcc](https://github.com/dvidelabs/flatcc) v0.6.0 or later. Later versions may require testing.
+Schemas in this repository require:
+
+* [FlatBuffers](https://github.com/google/flatbuffers) v1.12.0 or v2.0.0 (or later).
+* [flatcc](https://github.com/dvidelabs/flatcc) v0.6.0 (or later).
+* [msgpack-c](https://github.com/msgpack/msgpack-c) v3.3.0 (or later).
+
+Later versions may require testing.
 
 
 ## Contribute
