@@ -24,9 +24,6 @@
 */
 
 
-include "parameter.fbs";
-
-
 namespace AutomotiveBus.Signal.Channel;
 
 
@@ -80,8 +77,6 @@ union MessageType {
     SignalRead:SignalRead,
     SignalValue:SignalValue,
     SignalIndex:SignalIndex,
-    // From parameter.fbs
-    ParameterValue:AutomotiveBus.Signal.Parameter.ParameterValue,
 }
 table ChannelMessage {
     // Message metadata.

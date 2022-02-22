@@ -44,13 +44,3 @@ components:
         oneOf:
           - $ref: '#/components/schemas/SignalUidList'
           - $ref: '#/components/schemas/SignalValueList'
-    ParameterData:
-      description: MsgPack encoded Parameter Data.
-      type: object
-      additionalProperties:
-        anyOf:
-          - type: integer
-          - type: number
-      example:
-        foo: 42.24
-        bar: 42
