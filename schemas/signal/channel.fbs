@@ -35,7 +35,6 @@ table SignalLookup {
                             // be generated using the blake2b hash algorithm
                             // (to 4 bytes) over the signal name.
     name:string;            // Name of the Signal.
-    alias:[string];         // Signals can also have aliases (i.e. more than one name).
 }
 table SignalIndex {
     indexes:[SignalLookup];
@@ -56,8 +55,6 @@ table SignalIndex {
  */
 table SignalWrite {
     data:[ubyte];       // MsgPack encoded Signal Data.
-    immediate:bool;     // When set this Write will be immediatly processed.
-                        // This supports Unit Testing.
 }
 table SignalRead {
     data:[ubyte];       // MsgPack encoded Signal Data.
