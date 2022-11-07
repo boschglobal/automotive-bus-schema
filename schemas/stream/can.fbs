@@ -1,0 +1,64 @@
+//***************************************************************************
+// Copyright (c) 2022 for information on the respective copyright owner
+// see the NOTICE file and/or the following repository:
+//     https://github.com/boschglobal/automotive-bus-schema
+//
+// SPDX-License-Identifier: Apache-2.0
+//***************************************************************************
+
+
+
+/**
+    IDL for Automotive Bus - Stream Interface - CAN
+    ===============================================
+
+    MIME Type : application/x-automotive-bus; interface=stream; type=can;
+    Flatbuffers file identifier : SCAN
+*/
+
+
+namespace AutomotiveBus.Stream.Can;
+
+
+struct TimeSpec {
+    // Used for timestamps and simulation time.
+    psec10:long;            // Number of tens of picoseconds (resolution 1e-11 second).
+}
+
+struct Timing {
+    // Set of timestamps describing the entire timing of a frame (simulation time).
+    send:TimeSpec;          // Timestamp of message send..
+    arbitration:TimeSpec;   // Timestamp of message arbitration.
+    recv:TimeSpec;          // Timestamp of message reception.
+}
+
+enum FrameType:byte{
+    StandardFrame = 0,  // Classical CAN, payload up to 8 bytes.
+    ExtendedFrame = 1   // CAN FD, payload up to 64 bytes.
+}
+
+table Frame {
+    // CAN Frame.
+    frame_id:uint;      // CAN Message ID.
+    payload:[ubyte];    // Payload of the CAN frame, covered by DLC. Can be
+                        // longer than the payload length specified by DLC, but
+                        // must not be shorter.
+    length:ubyte;       // Length of payload content possible values as
+                        // defined by CAN DLC spec:
+                        //      Standard frame: 0...8
+                        //      Extended frame: 0...8,12,16,20,24,32,48,64.
+    frame_type:FrameType = StandardFrame;
+
+    // Frame Metadata
+    bus_id:uint;        // CAN Bus ID (logical identifier).
+    node_id:uint;       // ECU ID for the node _sending_ this Frame.
+    interface_id:uint;  // Interface ID of the node interface _sending_ this Frame.
+    timing:Timing;      // Timing of the frame.
+}
+
+table Stream {
+    frames:[Frame];     // Vector of Frames.
+}
+
+root_type Stream;
+file_identifier "SCAN"; // Stream of CAN frames.
