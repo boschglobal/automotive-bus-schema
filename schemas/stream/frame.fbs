@@ -9,36 +9,33 @@
 
 
 /**
-    IDL for Automotive Bus - Stream Interface - CAN
-    ===============================================
+    IDL for Automotive Bus - Stream Interface - Frames
+    ==================================================
 
-    MIME Type : application/x-automotive-bus; interface=stream; type=can;
-    Flatbuffers file identifier : SCAN
+    MIME Type : application/x-automotive-bus; interface=stream; type=frame;
+    Flatbuffers file identifier : SFRA
 */
 
 
-namespace AutomotiveBus.Stream.Can;
+namespace AutomotiveBus.Stream.Frame;
 
 
-struct TimeSpec {
-    // Used for timestamps and simulation time.
-    psec10:long;            // Number of tens of picoseconds (resolution 1e-11 second).
+table Timing {
+    // All values are nanoseconds from simulation start time (i.e. from 0.0).
+    send:long;          // Timestamp when a Frame is sent to the a Bus
+                        // Interface for (later) transmission.
+    arbitration:long;   // Timestamp when a Frame is transmitted over the
+                        // Bus medium (i.e. message arbitration).
+    recv:long;          // Timestamp when a Frame is received from a
+                        // Bus Interface and consumed.
 }
 
-struct Timing {
-    // Set of timestamps describing the entire timing of a frame (simulation time).
-    send:TimeSpec;          // Timestamp of message send..
-    arbitration:TimeSpec;   // Timestamp of message arbitration.
-    recv:TimeSpec;          // Timestamp of message reception.
-}
-
-enum FrameType:byte{
+enum CanFrameType:byte{
     StandardFrame = 0,  // Classical CAN, payload up to 8 bytes.
     ExtendedFrame = 1   // CAN FD, payload up to 64 bytes.
 }
 
-table Frame {
-    // CAN Frame.
+table CanFrame {
     frame_id:uint;      // CAN Message ID.
     payload:[ubyte];    // Payload of the CAN frame, covered by DLC. Can be
                         // longer than the payload length specified by DLC, but
@@ -47,13 +44,21 @@ table Frame {
                         // defined by CAN DLC spec:
                         //      Standard frame: 0...8
                         //      Extended frame: 0...8,12,16,20,24,32,48,64.
-    frame_type:FrameType = StandardFrame;
+    frame_type:CanFrameType = StandardFrame;
 
-    // Frame Metadata
+    // CAN Frame Metadata
     bus_id:uint;        // CAN Bus ID (logical identifier).
     node_id:uint;       // ECU ID for the node _sending_ this Frame.
     interface_id:uint;  // Interface ID of the node interface _sending_ this Frame.
     timing:Timing;      // Timing of the frame.
+}
+
+union FrameTypes {
+    CanFrame:CanFrame,
+}
+
+table Frame {
+    f:FrameTypes;       // Workaround as Vectors of Unions is not fully supported.
 }
 
 table Stream {
@@ -61,4 +66,4 @@ table Stream {
 }
 
 root_type Stream;
-file_identifier "SCAN"; // Stream of CAN frames.
+file_identifier "SFRA"; // Stream of FRAmes.
