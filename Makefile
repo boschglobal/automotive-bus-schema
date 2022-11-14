@@ -9,9 +9,10 @@
 
 ###############
 ## Builder Images
-BUILDER_DOCKER_IMAGES = flatc-builder python-builder
+BUILDER_DOCKER_IMAGES = flatc-builder python-builder gcc-builder
 FLATC_BUILDER_IMAGE ?= flatc-builder:latest
 PYTHON_BUILDER_IMAGE ?= python-builder:latest
+GCC_BUILDER_IMAGE ?= gcc-builder:latest
 
 
 ###############
