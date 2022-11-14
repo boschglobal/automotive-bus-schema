@@ -35,7 +35,7 @@ The schemas can be compiled using a containerized build toolchain as follows:
 $ git clone https://github.com/boschglobal/automotive-bus-schema.git
 $ cd automotive-bus-schema
 
-# Build the toolchain.
+# Build the toolchains.
 $ make builders
 ...
 $ docker images
@@ -67,6 +67,14 @@ Note that for C language the [flatcc compiler](https://google.github.io/flatbuff
 ### Usage
 
 After compiling the output can be integrated in the simulation model code. Please refer to the [FlatBuffers Tutorial](https://google.github.io/flatbuffers/flatbuffers_guide_tutorial.html) for example usage of compiled code, e.g. how to read or write data structures defined in a schema.
+
+
+### Examples
+
+This repository includes the following examples:
+
+* [cmake](doc/examples/cmake.md) - An example of a CMake based project with the Signal Schema and MsgPack.
+* [streams](doc/examples/streams.md) - How to use the Stream Interface Frame Schema with FlatBuffers.
 
 
 ## Dependencies
