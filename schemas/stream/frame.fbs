@@ -12,7 +12,7 @@
     IDL for Automotive Bus - Stream Interface - Frames
     ==================================================
 
-    MIME Type : application/x-automotive-bus; interface=stream; type=frame;
+    MIME Type : application/x-automotive-bus; interface=stream; type=frame; schema=fbs
     Flatbuffers file identifier : SFRA
 */
 
@@ -31,25 +31,27 @@ table Timing {
 }
 
 enum CanFrameType:byte{
-    StandardFrame = 0,  // Classical CAN, payload up to 8 bytes.
-    ExtendedFrame = 1   // CAN FD, payload up to 64 bytes.
+    StandardFrame = 0,  // Classical CAN:
+                        //      payload up to 8 bytes
+                        //      frame_id is 11-bits
+    ExtendedFrame = 1   // CAN FD:
+                        //      payload up to 64 bytes
+                        //      frame_id is 29-bits
 }
 
 table CanFrame {
     frame_id:uint;      // CAN Message ID.
-    payload:[ubyte];    // Payload of the CAN frame, covered by DLC. Can be
-                        // longer than the payload length specified by DLC, but
-                        // must not be shorter.
-    length:ubyte;       // Length of payload content possible values as
-                        // defined by CAN DLC spec:
+    payload:[ubyte];    // Payload of the CAN frame, covered by DLC. The length
+                        // of payload content should match values as defined by
+                        // CAN DLC spec:
                         //      Standard frame: 0...8
-                        //      Extended frame: 0...8,12,16,20,24,32,48,64.
+                        //      Extended frame: 0...8,12,16,20,24,32,48,64
     frame_type:CanFrameType = StandardFrame;
 
     // CAN Frame Metadata
-    bus_id:uint;        // CAN Bus ID (logical identifier).
-    node_id:uint;       // ECU ID for the node _sending_ this Frame.
-    interface_id:uint;  // Interface ID of the node interface _sending_ this Frame.
+    bus_id:ubyte;       // CAN Bus ID (logical identifier).
+    node_id:ubyte;      // ECU ID for the node _sending_ this Frame.
+    interface_id:ubyte; // Interface ID of the node interface _sending_ this Frame.
     timing:Timing;      // Timing of the frame.
 }
 
@@ -63,6 +65,10 @@ table Frame {
 
 table Stream {
     frames:[Frame];     // Vector of Frames.
+    node_uid:uint;      // UID of the node which sends this Stream. The node can
+                        // use this field to detect if it is receiving a Stream
+                        // which it had previously sent (and take appropriate
+                        // action).
 }
 
 root_type Stream;

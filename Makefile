@@ -9,9 +9,10 @@
 
 ###############
 ## Builder Images
-BUILDER_DOCKER_IMAGES = flatc-builder python-builder
+BUILDER_DOCKER_IMAGES = flatc-builder python-builder gcc-builder
 FLATC_BUILDER_IMAGE ?= flatc-builder:latest
 PYTHON_BUILDER_IMAGE ?= python-builder:latest
+GCC_BUILDER_IMAGE ?= gcc-builder:latest
 
 
 ###############
@@ -89,11 +90,13 @@ $(FBS_SCHEMA_SOURCES):
 	mkdir -p $(FBS_OUT_DIR)/fbs/$$(basename $$(dirname $@))
 	mkdir -p $(FBS_OUT_DIR)/fbs/$$(basename $$(dirname $@))
 	mkdir -p $(FBS_OUT_DIR)/fbs/$$(basename $$(dirname $@))
+	mkdir -p $(FBS_OUT_DIR)/lua
+
 	# Generate Flatbuffers code.
 	$(FLATCC) -a $(FLATC_OPTIONS) -o $(FBS_OUT_DIR)/c/$(SCHEMA_LIB)/$$(basename $$(dirname $@)) $@
 	$(FLATC) --cpp $(FLATC_OPTIONS) --filename-suffix '' -o $(FBS_OUT_DIR)/cpp/$(SCHEMA_LIB)/$$(basename $$(dirname $@)) $@
 	$(FLATC) --python $(FLATC_OPTIONS) -o $(FBS_OUT_DIR)/python $@
-	$(FLATC) --lua $(FLATC_OPTIONS) -o $(FBS_OUT_DIR)/lua $@
+	cd $(FBS_OUT_DIR)/lua; $(FLATC) --lua $(FLATC_OPTIONS) $@
 	# Copy over the original Flatbuffer schemas.
 	cp $@ $(FBS_OUT_DIR)/fbs/$$(basename $$(dirname $@))
 
