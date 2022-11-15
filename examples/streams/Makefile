@@ -5,7 +5,6 @@ GCC_BUILDER_IMAGE ?= gcc-builder:latest
 ifneq ($(CI), true)
 	DOCKER_BUILDER_CMD := docker run -it --rm \
 		--volume $$(pwd)/../..:/tmp/repo \
-		--volume ~/.ccache:/root/.ccache \
 		--workdir /tmp/repo/examples/streams \
 		$(GCC_BUILDER_IMAGE)
 endif
