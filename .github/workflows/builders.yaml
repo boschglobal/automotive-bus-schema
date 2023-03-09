@@ -1,0 +1,19 @@
+name: builders
+
+on:
+  workflow_dispatch:
+
+jobs:
+  flatc:
+    runs-on: [ubuntu-latest]
+    steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          push: false
+          tags: automotive-bus-schmea/flatc-builder:latest
+          context: ./docker/flatc-builder
+          
