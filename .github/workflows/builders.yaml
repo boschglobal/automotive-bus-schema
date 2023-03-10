@@ -8,8 +8,14 @@ env:
   IMAGE_BASE_NAME: ${{ github.repository }}
 
 jobs:
-  flatc:
+  container:
     runs-on: [ubuntu-latest]
+    strategy:
+      matrix:
+        builder:
+          - flatc
+          - gcc
+          - python
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -28,13 +34,13 @@ jobs:
         id: meta
         uses: docker/metadata-action@v3
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_BASE_NAME }}-flatc-builder
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_BASE_NAME }}-${{ matrix.builder }}-builder
 
       - name: Build and push
         uses: docker/build-push-action@v4
         with:
           push: true
-          context: ./docker/flatc-builder
+          context: ./docker/${{ matrix.builder }}-builder
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           
