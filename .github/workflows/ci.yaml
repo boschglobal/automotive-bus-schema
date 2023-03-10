@@ -76,4 +76,4 @@ jobs:
             cd work 
             make dist_package
             ls -1sh $(DIST_DIR)/*.*
-	          ls -1sh $(PYTHON_DIST_DIR)/dist/*.*
+            ls -1sh $(PYTHON_DIST_DIR)/dist/*.*
