@@ -7,7 +7,8 @@
 
 # Automotive Bus Schema
 
-(c) Robert Bosch GmbH under [Apache-2.0 license](https://www.apache.org/licenses/LICENSE-2.0)
+[![CI](https://github.com/boschglobal/automotive-bus-schema/actions/workflows/ci.yaml/badge.svg)](https://github.com/boschglobal/automotive-bus-schema/actions/workflows/ci.yaml)
+![GitHub](https://img.shields.io/github/license/boschglobal/automotive-bus-schema)
 
 
 ## Introduction
