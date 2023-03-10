@@ -63,5 +63,17 @@ jobs:
             make msgpack
             
       - name: Package
-        run: |
-          make dist
+        uses: addnab/docker-run-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          image: ${{ env.REGISTRY }}/${{ env.IMAGE_BASE_NAME }}-python-builder:main
+          username: ${{ github.actor }}
+          password:  ${{ secrets.GITHUB_TOKEN }}
+          options: |
+            --volume ${{ github.workspace }}:/work
+            --env PACKAGE_VERSION=${{ steps.package.outputs.version }}
+          run: |
+            cd work 
+            make dist_package
+            ls -1sh $(DIST_DIR)/*.*
+	          ls -1sh $(PYTHON_DIST_DIR)/dist/*.*
