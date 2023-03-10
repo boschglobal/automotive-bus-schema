@@ -2,12 +2,12 @@
 name: CI
 on:
   workflow_dispatch:
-#  push:
-#    branches: [main]
-#    tags:
-#      - 'v*.*.*'
-#  pull_request:
-#    branches: [main]
+  push:
+    branches: [main]
+    tags:
+      - 'v*.*.*'
+  pull_request:
+    branches: [main]
 
 env:
   REGISTRY: ghcr.io
@@ -75,5 +75,5 @@ jobs:
           run: |
             cd work 
             make dist_package
-            ls -1sh $(DIST_DIR)/*.*
-            ls -1sh $(PYTHON_DIST_DIR)/dist/*.*
+            ls -1sh ./dist/*.*
+            ls -1sh ./dist/python/dist/*.*
