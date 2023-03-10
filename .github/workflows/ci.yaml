@@ -22,7 +22,7 @@ jobs:
 
       - name: Build package metadata
         id: package_meta
-        uses: docker/metadata-action@v3
+        uses: docker/metadata-action@v4
         with:
           images: foo/bar
           tags: |
@@ -84,4 +84,4 @@ jobs:
         with:
           files: |
             dist/automotive-bus-schema.tar.gz
-            dist/python/dist/automotive_bus_schema-main-py3-none-any.whl
+            dist/python/dist/automotive_bus_schema-${{ env.PACKAGE_VERSION }}-py3-none-any.whl
