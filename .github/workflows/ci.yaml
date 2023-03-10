@@ -1,0 +1,67 @@
+---
+name: CI
+on:
+  workflow_dispatch:
+#  push:
+#    branches: [main]
+#    tags:
+#      - 'v*.*.*'
+#  pull_request:
+#    branches: [main]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_BASE_NAME: ${{ github.repository }}
+
+jobs:
+  build:
+    runs-on: [ubuntu-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Build package metadata
+        id: package_meta
+        uses: docker/metadata-action@v3
+        with:
+          images: foo/bar
+          tags: |
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            
+      - name: Get package version
+        id: package
+        run: |
+          echo ::set-output name=version::${{ fromJSON(steps.package_meta.outputs.json).labels['org.opencontainers.image.version'] }}
+          
+      - name: Flatc build targets
+        uses: addnab/docker-run-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          image: ${{ env.REGISTRY }}/${{ env.IMAGE_BASE_NAME }}-flatc-builder:main
+          username: ${{ github.actor }}
+          password:  ${{ secrets.GITHUB_TOKEN }}
+          options: |
+            --volume ${{ github.workspace }}:/work
+            --env PACKAGE_VERSION=${{ steps.package.outputs.version }}
+          run: |
+            cd work; make fbs
+            
+      - name: Python build targets
+        uses: addnab/docker-run-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          image: ${{ env.REGISTRY }}/${{ env.IMAGE_BASE_NAME }}-python-builder:main
+          username: ${{ github.actor }}
+          password:  ${{ secrets.GITHUB_TOKEN }}
+          options: |
+            --volume ${{ github.workspace }}:/work
+            --env PACKAGE_VERSION=${{ steps.package.outputs.version }}
+          run: |
+            cd work 
+            make python
+            make msgpack
+            
+      - name: Package
+        run: |
+          make dist
