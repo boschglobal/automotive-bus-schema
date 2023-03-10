@@ -9,10 +9,14 @@
 
 ###############
 ## Builder Images
+export CONTAINER_REPO ?= ghcr.io
+export CONTAINER_PREFIX ?= boschglobal/automotive-bus-schema-
+export CONTAINER_TAG ?= main
+FLATC_BUILDER_IMAGE ?= $(CONTAINER_REPO)/$(CONTAINER_PREFIX)flatc-builder:$(CONTAINER_TAG)
+PYTHON_BUILDER_IMAGE ?= $(CONTAINER_REPO)/$(CONTAINER_PREFIX)python-builder:$(CONTAINER_TAG)
+GCC_BUILDER_IMAGE ?= $(CONTAINER_REPO)/$(CONTAINER_PREFIX)gcc-builder:$(CONTAINER_TAG)
 BUILDER_DOCKER_IMAGES = flatc-builder python-builder gcc-builder
-FLATC_BUILDER_IMAGE ?= flatc-builder:latest
-PYTHON_BUILDER_IMAGE ?= python-builder:latest
-GCC_BUILDER_IMAGE ?= gcc-builder:latest
+
 
 
 ###############
@@ -58,7 +62,7 @@ builders:
 	for d in $(BUILDER_DOCKER_IMAGES) ;\
 	do \
 		docker build -f docker/$$d/Dockerfile \
-				--tag $$d:latest ./docker/$$d ;\
+			--tag $(CONTAINER_REPO)/$(CONTAINER_PREFIX)$$d:$(CONTAINER_TAG) ./docker/$$d ;\
 	done;
 
 build:

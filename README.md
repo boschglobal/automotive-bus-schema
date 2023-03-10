@@ -35,7 +35,7 @@ The schemas can be compiled using a containerized build toolchain as follows:
 $ git clone https://github.com/boschglobal/automotive-bus-schema.git
 $ cd automotive-bus-schema
 
-# Build the toolchains.
+# Build the toolchains (optional, builder containers are published on ghcr.io).
 $ make builders
 ...
 $ docker images
