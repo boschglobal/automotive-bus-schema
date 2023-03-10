@@ -77,3 +77,11 @@ jobs:
             make dist_package
             ls -1sh ./dist/*.*
             ls -1sh ./dist/python/dist/*.*
+            
+      - name: Publish
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            dist/automotive-bus-schema.tar.gz
+            dist/python/dist/automotive_bus_schema-main-py3-none-any.whl
