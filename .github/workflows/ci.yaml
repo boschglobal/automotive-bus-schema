@@ -32,7 +32,7 @@ jobs:
       - name: Get package version
         id: package
         run: |
-          echo ::set-output name=version::${{ fromJSON(steps.package_meta.outputs.json).labels['org.opencontainers.image.version'] }}
+          echo "PACKAGE_VERSION=${{ fromJSON(steps.package_meta.outputs.json).labels['org.opencontainers.image.version'] }}" >> $GITHUB_ENV
           
       - name: Flatc build targets
         uses: addnab/docker-run-action@v3
@@ -43,7 +43,7 @@ jobs:
           password:  ${{ secrets.GITHUB_TOKEN }}
           options: |
             --volume ${{ github.workspace }}:/work
-            --env PACKAGE_VERSION=${{ steps.package.outputs.version }}
+            --env PACKAGE_VERSION=${{ env.PACKAGE_VERSION }}
           run: |
             cd work; make fbs
             
@@ -56,7 +56,7 @@ jobs:
           password:  ${{ secrets.GITHUB_TOKEN }}
           options: |
             --volume ${{ github.workspace }}:/work
-            --env PACKAGE_VERSION=${{ steps.package.outputs.version }}
+            --env PACKAGE_VERSION=${{ env.PACKAGE_VERSION }}
           run: |
             cd work 
             make python
@@ -71,7 +71,7 @@ jobs:
           password:  ${{ secrets.GITHUB_TOKEN }}
           options: |
             --volume ${{ github.workspace }}:/work
-            --env PACKAGE_VERSION=${{ steps.package.outputs.version }}
+            --env PACKAGE_VERSION=${{ env.PACKAGE_VERSION }}
           run: |
             cd work 
             make dist_package
