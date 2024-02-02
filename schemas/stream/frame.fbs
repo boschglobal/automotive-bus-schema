@@ -31,7 +31,6 @@ table Timing {
 }
 
 enum CanFrameType:byte{
-    StandardFrame = 0,  // Depreciated.
     BaseFrame = 0,      // CAN Base Format (Classical):
                         //      frame_id is 11-bits
     ExtendedFrame = 1,  // CAN Extended Format:
