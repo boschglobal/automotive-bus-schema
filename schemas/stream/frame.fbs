@@ -31,11 +31,14 @@ table Timing {
 }
 
 enum CanFrameType:byte{
-    StandardFrame = 0,  // Classical CAN:
-                        //      payload up to 8 bytes
+    StandardFrame = 0,  // Depreciated.
+    BaseFrame = 0,      // CAN Base Format (Classical):
                         //      frame_id is 11-bits
-    ExtendedFrame = 1   // CAN FD:
-                        //      payload up to 64 bytes
+    ExtendedFrame = 1,  // CAN Extended Format:
+                        //      frame_id is 29-bits
+    FdBaseFrame = 2,    // CAN FD Base Format:
+                        //      frame_id is 11-bits
+    FdExtendedFrame = 3 // CAN FD Extended Format:
                         //      frame_id is 29-bits
 }
 
@@ -43,10 +46,10 @@ table CanFrame {
     frame_id:uint;      // CAN Message ID.
     payload:[ubyte];    // Payload of the CAN frame, covered by DLC. The length
                         // of payload content should match values as defined by
-                        // CAN DLC spec:
-                        //      Standard frame: 0...8
+                        // CAN DLC spec (for example):
+                        //      Standard/Base frame: 0...8
                         //      Extended frame: 0...8,12,16,20,24,32,48,64
-    frame_type:CanFrameType = StandardFrame;
+    frame_type:CanFrameType = BaseFrame;
 
     // CAN Frame Metadata
     bus_id:ubyte;       // CAN Bus ID (logical identifier).
