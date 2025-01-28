@@ -94,11 +94,13 @@ $(FBS_SCHEMA_SOURCES):
 	mkdir -p $(FBS_OUT_DIR)/fbs/$$(basename $$(dirname $@))
 	mkdir -p $(FBS_OUT_DIR)/fbs/$$(basename $$(dirname $@))
 	mkdir -p $(FBS_OUT_DIR)/fbs/$$(basename $$(dirname $@))
+	mkdir -p $(FBS_OUT_DIR)/go
 	mkdir -p $(FBS_OUT_DIR)/lua
 
 	# Generate Flatbuffers code.
 	$(FLATCC) -a $(FLATC_OPTIONS) -o $(FBS_OUT_DIR)/c/$(SCHEMA_LIB)/$$(basename $$(dirname $@)) $@
 	$(FLATC) --cpp $(FLATC_OPTIONS) --filename-suffix '' -o $(FBS_OUT_DIR)/cpp/$(SCHEMA_LIB)/$$(basename $$(dirname $@)) $@
+	cd $(FBS_OUT_DIR)/go; $(FLATC) --go $(FLATC_OPTIONS) $@
 	$(FLATC) --python $(FLATC_OPTIONS) -o $(FBS_OUT_DIR)/python $@
 	cd $(FBS_OUT_DIR)/lua; $(FLATC) --lua $(FLATC_OPTIONS) $@
 	# Copy over the original Flatbuffer schemas.

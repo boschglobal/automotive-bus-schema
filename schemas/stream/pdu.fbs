@@ -1,0 +1,172 @@
+//***************************************************************************
+// Copyright (c) 2025 for information on the respective copyright owner
+// see the NOTICE file and/or the following repository:
+//     https://github.com/boschglobal/automotive-bus-schema
+//
+// SPDX-License-Identifier: Apache-2.0
+//***************************************************************************
+
+
+
+/**
+    IDL for Automotive Bus - Stream Interface - PDUs
+    ================================================
+
+        MIME Type : application/x-automotive-bus; interface=stream; type=pdu; schema=fbs
+        Flatbuffers file identifier : SPDU
+
+    This stream contains PDU Objects. Each PDU Object may include optional
+    descriptive metadata, such as an associated PDU 'Type', which may be used
+    to model (or represent) processing behaviour related to that PDU.
+
+
+    Encoding examples
+    -----------------
+
+        Key:
+            '[]' - Table object.
+            '<>' - Vector object.
+            '@0' - Offset to following object (relative to current position in stream).
+
+
+    Minimal PDU (no payload):
+        [Stream:pdus=@0]
+        <@0,@1>
+        [Pdu:id=1]
+        [Pdu:id=2]
+
+    PDU with payload:
+        [Stream:pdus=@0]
+        <@0>
+        [Pdu:id=1,payload=@0]
+        <0x01,0x02,0x03>
+
+    PDU with associated PDU Type:
+        [Stream:pdus=@0]
+        <@0>
+        [Pdu:id=1,payload=@0,pdu_type=@1]
+        <0x01,0x02,0x03>
+        [CanPduMetadata:ExtendedFrameFormat=1]
+
+    PDUs with shared associated PDU Type:
+        [Stream:pdus=@0]
+        <@0,@2>
+        [Pdu:id=1,payload=@0,pdu_type=@3]
+        <0x01,0x02,0x03>
+        [Pdu:id=2,payload=@0,pdu_type=@1]
+        <0x04,0x05,0x06>
+        [CanPduMetadata:ExtendedFrameFormat=1]
+
+
+    References
+    ----------
+
+    * Flatbuffers documentation : https://flatbuffers.dev/
+    * Automotive Bus Schemas : https://github.com/boschglobal/automotive-bus-schema
+        * Toolchains : https://github.com/boschglobal/automotive-bus-schema/tree/main/docker
+        * Releases (generated code) : https://github.com/boschglobal/automotive-bus-schema/releases
+
+*/
+
+/// Namespace for generated code.
+namespace AutomotiveBus.Stream.Pdu;
+
+
+/**
+    CAN PDU Metadata
+    ----------------
+*/
+enum CanMessageFormat:byte{
+    /// CAN Base Format (pdu.id is 11-bits).
+    BaseFrameFormat     = 0,
+    /// CAN Extended Format (pdu.id is 29-bits).
+    ExtendedFrameFormat = 1,
+    /// CAN FD Base Format (pdu.id is 11-bits).
+    FdBaseFrameFormat = 2,
+    /// CAN FD Extended Format (pdu.id is 29-bits).
+    FdExtendedFrameFormat = 3,
+}
+
+enum CanFrameType:byte{
+    /// CAN Data Frame.
+    DataFrame = 0,
+    /// CAN Remote Frame.
+    RemoteFrame = 1,
+    /// CAN Error Frame.
+    ErrorFrame = 2,
+    /// CAN Overload Frame.
+    OverloadFrame = 3,
+}
+
+table CanPduMetadata {
+    /// CAN: Message Format.
+    message_format:CanMessageFormat = BaseFrameFormat;
+    /// CAN: Frame Type.
+    frame_type:CanFrameType = DataFrame;
+}
+
+
+/**
+    Ethernet PDU Metadata
+    ---------------------
+*/
+table EthernetPduMetadata {
+}
+
+
+/**
+    PDU Object / Stream
+    -------------------
+*/
+
+union PduType {
+    Can:CanPduMetadata,
+    Ethernet:EthernetPduMetadata,
+}
+
+table Pdu {
+    /// PDU: Identifier.
+    id:uint32;
+    /// PDU: Payload (DLC is vector length).
+    payload:[uint8];
+    /// PDU: Type, indicates the Network/Bus representation of this PDU.
+    ///  When not set the union value is NONE (i.e. a PDU).
+    pdu_type:PduType;
+
+
+    /**
+        Metadata Sections
+        -----------------
+
+        Additional fields for modeling transmission, framing and other
+        properties (or transient properties). All fields are optional.
+    */
+
+    /// Metadata: Node ID of SW, Function or ECU _originating_ this PDU.
+    node_id:uint32;
+    /// Metadata: Network (or Bus) Logical Identifier.
+    network_id:uint32;
+    /// Metadata: Interface ID of the Interface _sending_ this PDU.
+    interface_id:uint32;
+
+    /// Timing: Timestamp when PDU is sent for transmission to the Network Interface.
+    time_tx:float64;
+    /// Timing: Timestamp when PDU is transmitted across the Network segment.
+    time_net:float64;
+    /// Timing: Timestamp when PDU is received from the Network Interface.
+    time_rx:float64;
+}
+
+table Stream {
+    /// STREAM: PDU Vector.
+    pdus:[Pdu];
+
+    /// Metadata: Node ID (duplicated from Pdu.node_id). A node can use this
+    ///  field to detect if is receiving a Stream object which it had
+    ///  previously sent and take appropriate action (typically ignoring the
+    ///  entire Stream object buffer).
+    node_uid:uint32;
+}
+
+root_type Stream;
+file_identifier "SPDU"; // Stream of PDUs.
