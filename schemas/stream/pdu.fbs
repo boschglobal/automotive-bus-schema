@@ -41,20 +41,23 @@
         [Pdu:id=1,payload=@0]
         <0x01,0x02,0x03>
 
-    PDU with associated PDU Type:
+    PDU with associated metadata:
         [Stream:pdus=@0]
         <@0>
-        [Pdu:id=1,payload=@0,pdu_type=@1]
+        [Pdu:id=1,payload=@0,metadata=@1]
         <0x01,0x02,0x03>
-        [CanPduMetadata:ExtendedFrameFormat=1]
+        <@0>
+        [CanMessageMetadata:ExtendedFrameFormat=1]
 
-    PDUs with shared associated PDU Type:
+    PDUs with shared metadata:
         [Stream:pdus=@0]
         <@0,@2>
-        [Pdu:id=1,payload=@0,pdu_type=@3]
+        [Pdu:id=1,payload=@0,metadata=@1]
         <0x01,0x02,0x03>
-        [Pdu:id=2,payload=@0,pdu_type=@1]
+        <@3>
+        [Pdu:id=2,payload=@0,metadata=@1]
         <0x04,0x05,0x06>
+        <@0>
         [CanPduMetadata:ExtendedFrameFormat=1]
 
 
@@ -73,8 +76,22 @@ namespace AutomotiveBus.Stream.Pdu;
 
 
 /**
-    CAN PDU Metadata
-    ----------------
+    Timing Metadata
+    ---------------
+*/
+table TimingMetadata {
+    /// Timing: Timestamp when PDU is sent for transmission to the Network Interface.
+    time_tx:float64;
+    /// Timing: Timestamp when PDU is transmitted across the Network segment.
+    time_net:float64;
+    /// Timing: Timestamp when PDU is received from the Network Interface.
+    time_rx:float64;
+}
+
+
+/**
+    CAN Message Metadata
+    --------------------
 */
 enum CanMessageFormat:byte{
     /// CAN Base Format (pdu.id is 11-bits).
@@ -98,19 +115,30 @@ enum CanFrameType:byte{
     OverloadFrame = 3,
 }
 
-table CanPduMetadata {
+table CanMessageMetadata {
     /// CAN: Message Format.
     message_format:CanMessageFormat = BaseFrameFormat;
     /// CAN: Frame Type.
     frame_type:CanFrameType = DataFrame;
+    /// CAN: Interface ID of the Interface _sending_ this PDU.
+    interface_id:uint32;
+    /// CAN: Network ID of the network that _carries_ this PDU.
+    network_id:uint32;
 }
 
 
 /**
-    Ethernet PDU Metadata
-    ---------------------
+    SOME/IP Metadata
+    ----------------
 */
-table EthernetPduMetadata {
+table SomeIpMetadata {
+    message_id:uint32;
+    length:uint32;
+    request_id:uint32;
+    protocol_version:uint8;
+    interface_version:uint8;
+    message_type:uint8;
+    return_code:uint8;
 }
 
 
@@ -118,10 +146,10 @@ table EthernetPduMetadata {
     PDU Object / Stream
     -------------------
 */
-
-union PduType {
-    Can:CanPduMetadata,
-    Ethernet:EthernetPduMetadata,
+union PduMetadata {
+    Timing:TimingMetadata,
+    Can:CanMessageMetadata,
+    SomeIp:SomeIpMetadata,
 }
 
 table Pdu {
@@ -129,42 +157,29 @@ table Pdu {
     id:uint32;
     /// PDU: Payload (DLC is vector length).
     payload:[uint8];
-    /// PDU: Type, indicates the Network/Bus representation of this PDU.
-    ///  When not set the union value is NONE (i.e. a PDU).
-    pdu_type:PduType;
-
+    /// PDU: Metadata relating to this PDU (optional, vector).
+    metadata:[PduMetadata];
 
     /**
-        Metadata Sections
-        -----------------
-
-        Additional fields for modeling transmission, framing and other
-        properties (or transient properties). All fields are optional.
+        Identifying Properties
+        ----------------------
+        These fields are (typically) encoded as a part of the MIMEtype which
+        configures the source of a PDU stream.
     */
-
-    /// Metadata: Node ID of SW, Function or ECU _originating_ this PDU.
-    node_id:uint32;
-    /// Metadata: Network (or Bus) Logical Identifier.
-    network_id:uint32;
-    /// Metadata: Interface ID of the Interface _sending_ this PDU.
-    interface_id:uint32;
-
-    /// Timing: Timestamp when PDU is sent for transmission to the Network Interface.
-    time_tx:float64;
-    /// Timing: Timestamp when PDU is transmitted across the Network segment.
-    time_net:float64;
-    /// Timing: Timestamp when PDU is received from the Network Interface.
-    time_rx:float64;
+    /// Identifier: SWC ID of _originating_ this PDU.
+    swc_id:uint32;
+    /// Identifier: ECU ID of ECU _originating_ this PDU.
+    ecu_id:uint32;
 }
 
 table Stream {
     /// STREAM: PDU Vector.
     pdus:[Pdu];
 
-    /// Metadata: Node ID (duplicated from Pdu.node_id). A node can use this
-    ///  field to detect if is receiving a Stream object which it had
-    ///  previously sent and take appropriate action (typically ignoring the
-    ///  entire Stream object buffer).
+    /// Metadata: Node UID of the Simulation (or System) node which is sending
+    ///  this stream object. Used by a Node to detect incomming stream objects
+    ///  which the Node had previously sent (i.e. an echo from the underlying
+    ///  implementation of the stream transport).
     node_uid:uint32;
 }
 
