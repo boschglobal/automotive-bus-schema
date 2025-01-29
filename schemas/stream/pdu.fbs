@@ -152,13 +152,17 @@ union PduMetadata {
     SomeIp:SomeIpMetadata,
 }
 
+table Metadata {
+    m:PduMetadata;
+}
+
 table Pdu {
     /// PDU: Identifier.
     id:uint32;
     /// PDU: Payload (DLC is vector length).
     payload:[uint8];
-    /// PDU: Metadata relating to this PDU (optional, vector).
-    metadata:[PduMetadata];
+    /// PDU: Metadata relating to this PDU (optional).
+    metadata:[Metadata];
 
     /**
         Identifying Properties
