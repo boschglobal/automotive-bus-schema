@@ -41,23 +41,20 @@
         [Pdu:id=1,payload=@0]
         <0x01,0x02,0x03>
 
-    PDU with associated metadata:
+    PDU with associated transport metadata:
         [Stream:pdus=@0]
         <@0>
-        [Pdu:id=1,payload=@0,metadata=@1]
+        [Pdu:id=1,payload=@0,transport=@1]
         <0x01,0x02,0x03>
-        <@0>
         [CanMessageMetadata:ExtendedFrameFormat=1]
 
-    PDUs with shared metadata:
+    PDUs with shared transport metadata:
         [Stream:pdus=@0]
         <@0,@2>
-        [Pdu:id=1,payload=@0,metadata=@1]
+        [Pdu:id=1,payload=@0,transport=@3]
         <0x01,0x02,0x03>
-        <@3>
-        [Pdu:id=2,payload=@0,metadata=@1]
+        [Pdu:id=2,payload=@0,transport=@1]
         <0x04,0x05,0x06>
-        <@0>
         [CanPduMetadata:ExtendedFrameFormat=1]
 
 
