@@ -75,19 +75,6 @@
 namespace AutomotiveBus.Stream.Pdu;
 
 
-/**
-    Timing Metadata
-    ---------------
-*/
-table TimingMetadata {
-    /// Timing: Timestamp when PDU is sent for transmission to the Network Interface.
-    time_tx:float64;
-    /// Timing: Timestamp when PDU is transmitted across the Network segment.
-    time_net:float64;
-    /// Timing: Timestamp when PDU is received from the Network Interface.
-    time_rx:float64;
-}
-
 
 /**
     CAN Message Metadata
@@ -128,17 +115,129 @@ table CanMessageMetadata {
 
 
 /**
+    SoAd Metadata
+    -------------
+*/
+table SoAdMetadata {
+}
+
+
+/**
+    DoIP Metadata
+    -------------
+*/
+table DoIpMetadata {
+    /// DoIP: Protocol Version.
+    protocol_version:uint8;
+    /// DoIP: Payload Type.
+    payload_type:uint16;
+}
+
+
+/**
     SOME/IP Metadata
     ----------------
 */
 table SomeIpMetadata {
+    /// SOME/IP: Message ID.
     message_id:uint32;
+    /// SOME/IP: Message Length.
     length:uint32;
+    /// SOME/IP: Request ID.
     request_id:uint32;
+    /// SOME/IP: Protocol Version.
     protocol_version:uint8;
+    /// SOME/IP: Interface Version.
     interface_version:uint8;
+    /// SOME/IP: Message Type.
     message_type:uint8;
+    /// SOME/IP: Return code.
     return_code:uint8;
+}
+
+
+/**
+    IP Message Metadata
+    -------------------
+*/
+enum IpProtocol:uint8 {
+    None = 0,
+    Tcp = 6,
+    Udp = 17,
+}
+
+struct IpAddressV6 {
+    v0:uint16;
+    v1:uint16;
+    v2:uint16;
+    v3:uint16;
+    v4:uint16;
+    v5:uint16;
+    v6:uint16;
+    v7:uint16;
+}
+
+table IpV4 {
+    src_addr:uint32;
+    dst_addr:uint32;
+}
+
+table IpV6 {
+    src_addr:IpAddressV6;
+    dst_addr:IpAddressV6;
+}
+
+union IpAddr {
+    v4:IpV4,
+    v6:IpV6,
+}
+
+table IpMessageMetadata {
+    /**
+        Ethernet (IEEE 802.1Q)
+        ----------------------
+    */
+    /// Ethernet: Destination MAC (stored in lower 48-bits, transmission order).
+    ///  example: uint64 := XX-XX-01-23-45-67-89-AB
+    eth_dst_mac:uint64;
+    /// Ethernet: Source MAC (stored in lower 48-bits, transmission order).
+    ///  example: uint64 := XX-XX-01-23-45-67-89-AB
+    eth_src_mac:uint64;
+    /// Ethernet: EtherType.
+    eth_ethertype:uint16;
+
+    /// Ethernet: TCI: Priority code point.
+    eth_tci_pcp:uint8;
+    /// Ethernet: TCI: Drop eligible indicator.
+    eth_tci_dei:uint8;
+    /// Ethernet: TCI: VLAN identifier.
+    eth_tci_vid:uint16;
+
+    /**
+        IP Protocols
+        ------------
+    */
+    /// IP: Address.
+    ip_addr:IpAddr;
+    /// IP: Protocol Specifier.
+    ip_protocol:IpProtocol;
+    /// IP: TCP/UDP Source Port.
+    ip_src_port:uint16;
+    /// IP: TCP/UDP Destination Port.
+    ip_dst_port:uint16;
+
+    /**
+        Module Protocols
+        ----------------
+        Presense of these tables are an indicator that a module protocol
+        is associated with the PDU encoded in the stream.
+    */
+    /// SoAd: Socket Adapter module.
+    so_ad:SoAdMetadata;
+    /// DoIp: Diagnostic Communication over Internet Protocol module.
+    do_ip:DoIpMetadata;
+    /// Some/IP: Scalable service-Oriented Midedleware over IP.
+    some_ip:SomeIpMetadata;
 }
 
 
@@ -146,14 +245,9 @@ table SomeIpMetadata {
     PDU Object / Stream
     -------------------
 */
-union PduMetadata {
-    Timing:TimingMetadata,
+union TransportMetadata {
     Can:CanMessageMetadata,
-    SomeIp:SomeIpMetadata,
-}
-
-table Metadata {
-    m:PduMetadata;
+    Ip:IpMessageMetadata,
 }
 
 table Pdu {
@@ -161,8 +255,8 @@ table Pdu {
     id:uint32;
     /// PDU: Payload (DLC is vector length).
     payload:[uint8];
-    /// PDU: Metadata relating to this PDU (optional).
-    metadata:[Metadata];
+    /// PDU: Transport metadata relating to this PDU (optional).
+    transport:TransportMetadata;
 
     /**
         Identifying Properties
