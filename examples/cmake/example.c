@@ -1,4 +1,6 @@
-/* Copyright (C) 2021 Robert Bosch GmbH */
+// Copyright 2021 Robert Bosch GmbH
+//
+// SPDX-License-Identifier: Apache-2.0
 
 #include <stdint.h>
 #include <stdio.h>
@@ -79,7 +81,7 @@ int main(int argc, char **argv)
     }
 
     /* Cleanup. */
-    free(buf);
+    FLATCC_BUILDER_FREE(buf);
     flatcc_builder_clear(B);
     exit(0);
 }

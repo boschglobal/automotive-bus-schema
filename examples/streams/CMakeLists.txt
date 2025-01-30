@@ -1,3 +1,7 @@
+# Copyright 2022 Robert Bosch GmbH
+#
+# SPDX-License-Identifier: Apache-2.0
+
 cmake_minimum_required(VERSION 3.21)
 
 project(stream-frames-example)

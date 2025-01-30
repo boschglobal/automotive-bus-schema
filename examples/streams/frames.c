@@ -1,4 +1,6 @@
-/* Copyright (C) 2022 Robert Bosch GmbH */
+// Copyright 2022 Robert Bosch GmbH
+//
+// SPDX-License-Identifier: Apache-2.0
 
 #include <stdio.h>
 #include <stdint.h>
@@ -145,7 +147,7 @@ int main(int argc, char **argv)
 
     /* Process the stream of frames. */
     process_stream(buffer, length);
-    flatcc_builder_free(buffer);
+    FLATCC_BUILDER_FREE(buffer);
 
     /* Clear out the FBS Builder. */
     flatcc_builder_clear(&builder);

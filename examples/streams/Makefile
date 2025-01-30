@@ -1,6 +1,11 @@
-# Copyright (C) 2022 Robert Bosch GmbH
+# Copyright 2022 Robert Bosch GmbH
+#
+# SPDX-License-Identifier: Apache-2.0
 
-GCC_BUILDER_IMAGE ?= gcc-builder:latest
+CONTAINER_REPO ?= ghcr.io
+CONTAINER_PREFIX ?= boschglobal/automotive-bus-schema-
+CONTAINER_TAG ?= main
+GCC_BUILDER_IMAGE ?= $(CONTAINER_REPO)/$(CONTAINER_PREFIX)gcc-builder:$(CONTAINER_TAG)
 
 ifneq ($(CI), true)
 	DOCKER_BUILDER_CMD := docker run -it --rm \
