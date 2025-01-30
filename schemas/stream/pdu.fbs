@@ -1,0 +1,285 @@
+//***************************************************************************
+// Copyright (c) 2025 for information on the respective copyright owner
+// see the NOTICE file and/or the following repository:
+//     https://github.com/boschglobal/automotive-bus-schema
+//
+// SPDX-License-Identifier: Apache-2.0
+//***************************************************************************
+
+
+
+/**
+    IDL for Automotive Bus - Stream Interface - PDUs
+    ================================================
+
+        MIME Type : application/x-automotive-bus; interface=stream; type=pdu; schema=fbs
+        Flatbuffers file identifier : SPDU
+
+    This stream contains PDU Objects. Each PDU Object may include optional
+    descriptive metadata, such as an associated PDU 'Type', which may be used
+    to model (or represent) processing behaviour related to that PDU.
+
+
+    Encoding examples
+    -----------------
+
+        Key:
+            '[]' - Table object.
+            '<>' - Vector object.
+            '@0' - Offset to following object (relative to current position in stream).
+
+
+    Minimal PDU (no payload):
+        [Stream:pdus=@0]
+        <@0,@1>
+        [Pdu:id=1]
+        [Pdu:id=2]
+
+    PDU with payload:
+        [Stream:pdus=@0]
+        <@0>
+        [Pdu:id=1,payload=@0]
+        <0x01,0x02,0x03>
+
+    PDU with associated metadata:
+        [Stream:pdus=@0]
+        <@0>
+        [Pdu:id=1,payload=@0,metadata=@1]
+        <0x01,0x02,0x03>
+        <@0>
+        [CanMessageMetadata:ExtendedFrameFormat=1]
+
+    PDUs with shared metadata:
+        [Stream:pdus=@0]
+        <@0,@2>
+        [Pdu:id=1,payload=@0,metadata=@1]
+        <0x01,0x02,0x03>
+        <@3>
+        [Pdu:id=2,payload=@0,metadata=@1]
+        <0x04,0x05,0x06>
+        <@0>
+        [CanPduMetadata:ExtendedFrameFormat=1]
+
+
+    References
+    ----------
+
+    * Flatbuffers documentation : https://flatbuffers.dev/
+    * Automotive Bus Schemas : https://github.com/boschglobal/automotive-bus-schema
+        * Toolchains : https://github.com/boschglobal/automotive-bus-schema/tree/main/docker
+        * Releases (generated code) : https://github.com/boschglobal/automotive-bus-schema/releases
+
+*/
+
+/// Namespace for generated code.
+namespace AutomotiveBus.Stream.Pdu;
+
+
+
+/**
+    CAN Message Metadata
+    --------------------
+*/
+enum CanMessageFormat:byte{
+    /// CAN Base Format (pdu.id is 11-bits).
+    BaseFrameFormat     = 0,
+    /// CAN Extended Format (pdu.id is 29-bits).
+    ExtendedFrameFormat = 1,
+    /// CAN FD Base Format (pdu.id is 11-bits).
+    FdBaseFrameFormat = 2,
+    /// CAN FD Extended Format (pdu.id is 29-bits).
+    FdExtendedFrameFormat = 3,
+}
+
+enum CanFrameType:byte{
+    /// CAN Data Frame.
+    DataFrame = 0,
+    /// CAN Remote Frame.
+    RemoteFrame = 1,
+    /// CAN Error Frame.
+    ErrorFrame = 2,
+    /// CAN Overload Frame.
+    OverloadFrame = 3,
+}
+
+table CanMessageMetadata {
+    /// CAN: Message Format.
+    message_format:CanMessageFormat = BaseFrameFormat;
+    /// CAN: Frame Type.
+    frame_type:CanFrameType = DataFrame;
+    /// CAN: Interface ID of the Interface _sending_ this PDU.
+    interface_id:uint32;
+    /// CAN: Network ID of the network that _carries_ this PDU.
+    network_id:uint32;
+}
+
+
+/**
+    SoAd Metadata
+    -------------
+*/
+table SoAdMetadata {
+}
+
+
+/**
+    DoIP Metadata
+    -------------
+*/
+table DoIpMetadata {
+    /// DoIP: Protocol Version.
+    protocol_version:uint8;
+    /// DoIP: Payload Type.
+    payload_type:uint16;
+}
+
+
+/**
+    SOME/IP Metadata
+    ----------------
+*/
+table SomeIpMetadata {
+    /// SOME/IP: Message ID.
+    message_id:uint32;
+    /// SOME/IP: Message Length.
+    length:uint32;
+    /// SOME/IP: Request ID.
+    request_id:uint32;
+    /// SOME/IP: Protocol Version.
+    protocol_version:uint8;
+    /// SOME/IP: Interface Version.
+    interface_version:uint8;
+    /// SOME/IP: Message Type.
+    message_type:uint8;
+    /// SOME/IP: Return code.
+    return_code:uint8;
+}
+
+
+/**
+    IP Message Metadata
+    -------------------
+*/
+enum IpProtocol:uint8 {
+    None = 0,
+    Tcp = 6,
+    Udp = 17,
+}
+
+struct IpAddressV6 {
+    v0:uint16;
+    v1:uint16;
+    v2:uint16;
+    v3:uint16;
+    v4:uint16;
+    v5:uint16;
+    v6:uint16;
+    v7:uint16;
+}
+
+table IpV4 {
+    src_addr:uint32;
+    dst_addr:uint32;
+}
+
+table IpV6 {
+    src_addr:IpAddressV6;
+    dst_addr:IpAddressV6;
+}
+
+union IpAddr {
+    v4:IpV4,
+    v6:IpV6,
+}
+
+table IpMessageMetadata {
+    /**
+        Ethernet (IEEE 802.1Q)
+        ----------------------
+    */
+    /// Ethernet: Destination MAC (stored in lower 48-bits, transmission order).
+    ///  example: uint64 := XX-XX-01-23-45-67-89-AB
+    eth_dst_mac:uint64;
+    /// Ethernet: Source MAC (stored in lower 48-bits, transmission order).
+    ///  example: uint64 := XX-XX-01-23-45-67-89-AB
+    eth_src_mac:uint64;
+    /// Ethernet: EtherType.
+    eth_ethertype:uint16;
+
+    /// Ethernet: TCI: Priority code point.
+    eth_tci_pcp:uint8;
+    /// Ethernet: TCI: Drop eligible indicator.
+    eth_tci_dei:uint8;
+    /// Ethernet: TCI: VLAN identifier.
+    eth_tci_vid:uint16;
+
+    /**
+        IP Protocols
+        ------------
+    */
+    /// IP: Address.
+    ip_addr:IpAddr;
+    /// IP: Protocol Specifier.
+    ip_protocol:IpProtocol;
+    /// IP: TCP/UDP Source Port.
+    ip_src_port:uint16;
+    /// IP: TCP/UDP Destination Port.
+    ip_dst_port:uint16;
+
+    /**
+        Module Protocols
+        ----------------
+        Presense of these tables are an indicator that a module protocol
+        is associated with the PDU encoded in the stream.
+    */
+    /// SoAd: Socket Adapter module.
+    so_ad:SoAdMetadata;
+    /// DoIp: Diagnostic Communication over Internet Protocol module.
+    do_ip:DoIpMetadata;
+    /// Some/IP: Scalable service-Oriented Midedleware over IP.
+    some_ip:SomeIpMetadata;
+}
+
+
+/**
+    PDU Object / Stream
+    -------------------
+*/
+union TransportMetadata {
+    Can:CanMessageMetadata,
+    Ip:IpMessageMetadata,
+}
+
+table Pdu {
+    /// PDU: Identifier.
+    id:uint32;
+    /// PDU: Payload (DLC is vector length).
+    payload:[uint8];
+    /// PDU: Transport metadata relating to this PDU (optional).
+    transport:TransportMetadata;
+
+    /**
+        Identifying Properties
+        ----------------------
+        These fields are (typically) encoded as a part of the MIMEtype which
+        configures the source of a PDU stream.
+    */
+    /// Identifier: SWC ID of _originating_ this PDU.
+    swc_id:uint32;
+    /// Identifier: ECU ID of ECU _originating_ this PDU.
+    ecu_id:uint32;
+}
+
+table Stream {
+    /// STREAM: PDU Vector.
+    pdus:[Pdu];
+
+    /// Metadata: Node UID of the Simulation (or System) node which is sending
+    ///  this stream object. Used by a Node to detect incomming stream objects
+    ///  which the Node had previously sent (i.e. an echo from the underlying
+    ///  implementation of the stream transport).
+    node_uid:uint32;
+}
+
+root_type Stream;
+file_identifier "SPDU"; // Stream of PDUs.
