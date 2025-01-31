@@ -12,7 +12,7 @@
     IDL for Automotive Bus - Stream Interface - PDUs
     ================================================
 
-        MIME Type : application/x-automotive-bus; interface=stream; type=pdu; schema=fbs
+        MIME Type : application/x-automotive-bus; interface=stream; type=pdu; schema=fbs; swc_id=1; ecu_id=2
         Flatbuffers file identifier : SPDU
 
     This stream contains PDU Objects. Each PDU Object may include optional
