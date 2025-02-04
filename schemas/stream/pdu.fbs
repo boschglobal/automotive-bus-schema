@@ -112,16 +112,8 @@ table CanMessageMetadata {
 
 
 /**
-    SoAd Metadata
-    -------------
-*/
-table SoAdMetadata {
-}
-
-
-/**
-    DoIP Metadata
-    -------------
+    Socket Adapter Metadata
+    -----------------------
 */
 table DoIpMetadata {
     /// DoIP: Protocol Version.
@@ -130,11 +122,6 @@ table DoIpMetadata {
     payload_type:uint16;
 }
 
-
-/**
-    SOME/IP Metadata
-    ----------------
-*/
 table SomeIpMetadata {
     /// SOME/IP: Message ID.
     message_id:uint32;
@@ -150,6 +137,13 @@ table SomeIpMetadata {
     message_type:uint8;
     /// SOME/IP: Return code.
     return_code:uint8;
+}
+
+union SocketAdapter {
+    /// DoIp: Diagnostic Communication over Internet Protocol.
+    do_ip:DoIpMetadata,
+    /// Some/IP: Scalable service-Oriented Midedleware over IP.
+    some_ip:SomeIpMetadata,
 }
 
 
@@ -224,17 +218,10 @@ table IpMessageMetadata {
     ip_dst_port:uint16;
 
     /**
-        Module Protocols
-        ----------------
-        Presense of these tables are an indicator that a module protocol
-        is associated with the PDU encoded in the stream.
+        Adapter Protocols
+        -----------------
     */
-    /// SoAd: Socket Adapter module.
-    so_ad:SoAdMetadata;
-    /// DoIp: Diagnostic Communication over Internet Protocol module.
-    do_ip:DoIpMetadata;
-    /// Some/IP: Scalable service-Oriented Midedleware over IP.
-    some_ip:SomeIpMetadata;
+    adapter:SocketAdapter;
 }
 
 
