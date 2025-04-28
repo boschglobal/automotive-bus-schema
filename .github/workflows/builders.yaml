@@ -2,7 +2,12 @@ name: builders
 
 on:
   workflow_dispatch:
-  
+
+permissions:
+  contents: read
+  pull-requests: read
+  packages: write
+
 env:
   REGISTRY: ghcr.io
   IMAGE_BASE_NAME: ${{ github.repository }}
