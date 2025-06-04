@@ -241,7 +241,7 @@ table StructMetadata {
     // Struct: Attribute aligned.
     attribute_aligned:uint16;
     // Struct: Attribute packed.
-    attribute_packed:uint16;
+    attribute_packed:bool;
 
     // Struct: Platform architecture (of the producing system).
     platform_arch:string;
