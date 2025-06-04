@@ -226,12 +226,40 @@ table IpMessageMetadata {
 
 
 /**
+    Struct Metadata
+    ---------------
+*/
+
+table StructMetadata {
+    /// Struct: Name of the struct type.
+    type_name:string;
+    /// Struct: Name of the struct instance/variable.
+    var_name:string;
+    /// Struct: Encoding used to package the struct instance/variable (default is 'memcpy').
+    encoding:string;
+
+    // Struct: Attribute aligned.
+    attribute_aligned:uint16;
+    // Struct: Attribute packed.
+    attribute_packed:uint16;
+
+    // Struct: Platform architecture (of the producing system).
+    platform_arch:string;
+    // Struct: Platform architecture (of the producing system).
+    platform_os:string;
+    // Struct: Platform architecture (of the producing system).
+    platform_abi:string;
+}
+
+
+/**
     PDU Object / Stream
     -------------------
 */
 union TransportMetadata {
     Can:CanMessageMetadata,
     Ip:IpMessageMetadata,
+    Struct:StructMetadata,
 }
 
 table Pdu {
