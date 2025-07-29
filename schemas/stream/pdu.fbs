@@ -394,7 +394,7 @@ table FlexrayConfig {
     /// Config: Startup in single slot mode.
     single_slot_enabled:bool;
     /// Config: Key slot id (for simplified startup).
-    key_slot_id:uint8;
+    key_slot_id:uint16;
     /// Config: Key slot LPDU (for startup with payload).
     key_slot_lpdu:FlexrayLpdu;
     /// Config: Key slot Payload (related to LPDU).
