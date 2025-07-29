@@ -20,6 +20,16 @@
     to model (or represent) processing behaviour related to that PDU.
 
 
+    Supporting Metadata
+    -------------------
+
+        * CAN
+        * IP
+            * SOME/IP
+            * DoIP
+        * FlexRay
+
+
     Encoding examples
     -----------------
 
@@ -142,7 +152,7 @@ table SomeIpMetadata {
 union SocketAdapter {
     /// DoIp: Diagnostic Communication over Internet Protocol.
     do_ip:DoIpMetadata,
-    /// Some/IP: Scalable service-Oriented Midedleware over IP.
+    /// Some/IP: Scalable service-Oriented Middleware over IP.
     some_ip:SomeIpMetadata,
 }
 
@@ -253,6 +263,246 @@ table StructMetadata {
 
 
 /**
+    FlexRay Tables
+    --------------
+*/
+
+enum FlexrayBitrate: byte {
+    BR10Mbps = 0,
+    BR8Mbps = 1,
+    BR5Mbps = 2,
+    BR2_5 = 3,
+}
+
+enum FlexrayTransmitMode: byte {
+    None = 0,
+    Continuous = 1,
+    SingleShot = 2,
+}
+
+enum FlexrayChannel: byte {
+    None = 0,
+    A = 1,
+    B = 2,
+    AB = 3,
+}
+
+enum FlexrayLpduStatus: byte {
+    Transmitted = 0,
+    TransmittedConflict = 1,
+    NotTransmitted = 2,
+    Received = 3,
+    NotReceived = 4,
+    ReceivedMoreDataAvailable = 5,
+}
+
+enum FlexrayTransceiverState:byte {
+    NoState = 0,
+    NoConnection = 1,
+    NoSignal = 2,
+    CAS = 3,
+    WUP = 4,
+    FrameSync = 5,
+    FrameError = 6,
+}
+
+enum FlexrayPocState:byte {
+    DefaultConfig = 0,
+    Config = 1,
+    Ready = 2,
+    Wakeup = 3,
+    Startup = 4,
+    NormalActive = 5,
+    NormalPassive = 6,
+    StateHalt = 7,
+    Freeze = 8,
+    Undefined = 9,
+}
+
+enum FlexrayPocCommand:byte {
+    None = 0,
+    Config = 1,
+    Ready = 2,
+    Wakeup = 3,
+    Run = 4,
+    AllSlots = 5,
+    Halt = 6,
+    Freeze = 7,
+    Coldstart = 8,
+}
+
+enum FlexrayDirection:byte {
+    Rx = 0,
+    Tx = 1,
+}
+
+/**
+    FlexRay Config Metadata
+    -----------------------
+*/
+
+table FlexrayConfig {
+    /**
+        Communication Cycle Config
+        --------------------------
+
+        10 MBit/s
+            sample clock period = 12.5 ns = 1 * 10 MHz
+            sample per microtick = 2 (1uT = 25 ns)
+        5 MBit/s
+            sample clock period = 25 ns = 2 * 10 MHz
+            sample per microtick = 1 (1uT = 25 ns)
+        2.5 MBit/s
+            sample clock period = 50 ns = 4 * 10 MHz
+            sample per microtick = 1 (1uT = 50 ns)
+    */
+    /// Config: The FlexRay bitrate.
+    bit_rate:FlexrayBitrate;
+    /// Config: Macroticks per communication cycle (10..16000 MT).
+    macrotick_per_cycle:uint16;
+    /// Config: Micorticks per communication cycle (640..640000 uT).
+    microtick_per_cycle:uint16;
+    /// Config: Start of network idle, marks start-of-end of communication cycle (7..15997 MT).
+    network_idle_start:uint16;
+    /// Config: Length of a static slot (4..659 MT).
+    static_slot_length:uint16;
+    /// Config: Number of static slots (2..1023).
+    static_slot_count:uint16;
+    /// Config: Length of a mimi slot (2..63 MT).
+    minislot_length:uint8;
+    /// Config: Number of mini slots (0..7986).
+    minislot_count:uint16;
+    /// Config: Static segment payload length (0..254 bytes).
+    static_slot_payload_length:uint32;
+    /// Config: Default frame transmit mode.
+    transmit_mode:FlexrayTransmitMode;
+    /// Config: Channels enabled.
+    channels_enabled:FlexrayChannel;
+
+    /**
+        Coldstart & Sync Config Properties
+        ----------------------------------
+    */
+    /// Config: Coldstart node (1=yes, 0=no).
+    coldstart_node:bool;
+    /// Config: Sync node (1=yes, 0=no).
+    sync_node: bool;
+    /// Config: Coldstart attempts (2..31).
+    coldstart_attempts:uint8;
+    /// Config: Wakeup channel selector (0=A, 1=B).
+    wakeup_channel_select:uint8;
+    /// Config: Startup in single slot mode.
+    single_slot_enabled:bool;
+    /// Config: Key slot id (for simplified startup).
+    key_slot_id:uint8;
+    /// Config: Key slot LPDU (for startup with payload).
+    key_slot_lpdu:FlexrayLpdu;
+    /// Config: Key slot Payload (related to LPDU).
+    key_slot_payload:[uint8];
+
+    /**
+        Frame Config Table
+        ------------------
+    */
+    /// Config: Frame/LPDU static config table.
+    frame_table:[FlexrayLpdu];
+}
+
+/**
+    FlexRay Status Metadata
+    -----------------------
+*/
+
+struct FlexrayChannelStatus {
+    /// Status: The observed "signal state" of the FlexRay bus via the Transceiver.
+    state:FlexrayTransceiverState;
+    /// Status: State of the FlexRay POC as observed by a FlexRay Controller/Interface.
+    poc_state:FlexrayPocState;
+    /// Status: A POC command (request) from a FlexRay Controller/Interface.
+    command:FlexrayPocCommand;
+}
+
+table FlexrayStatus {
+    /// Status: The macrotick (MT) associated with the containing PDU Stream Object.
+    macrotick:uint16;
+    /// Status: The cycle count associated with the containing PDU Stream Object.
+    cycle:uint8;
+    /// Status: Status of FlexRay Channel A.
+    channel_a:FlexrayChannelStatus;
+    /// Status: Status of FlexRay Channel B.
+    channel_b:FlexrayChannelStatus;
+}
+
+/**
+    FlexRay LPDU Metadata
+    ---------------------
+*/
+
+table FlexrayLpdu {
+    /**
+        Transmission Properties
+        -----------------------
+        These fields represent the properties of Tx/Rx frames. The
+        frame_table_index field should be set to the FlexrayConfig.frame_table
+        so that config fields can be referenced. Config fields will (may) not
+        be included the table when representing a transmission (of a frame).
+    */
+    /// Frame: Cycle the frame was received on.
+    cycle:uint8;
+    /// Frame: The frame header has the 'Null Frame' indicator set.
+    null_frame:bool;
+    /// Frame: The frame header has the 'Null Frame' indicator set.
+    sync_frame:bool;
+    /// Frame: The frame header has the 'Null Frame' indicator set.
+    startup_frame:bool;
+    /// Frame: The frame header has the 'Null Frame' indicator set.
+    payload_preamble:bool;
+    /// Frame: Status of this frame (actual/observed status).
+    status:FlexrayLpduStatus;
+
+    /**
+        Config Properties
+        -----------------
+        These fields represent the static config properties of an LPDU Frame.
+    */
+    /// Config: Slot ID of the frame.
+    slot_id:uint16;
+    /// Config: Payload length.
+    payload_length:uint8;
+    /// Config: Number of cycles between frame transmission.
+    cycle_repetition:uint8;
+    /// Config: Cycle when frame is first sent.
+    base_cycle:uint8;
+    /// Config: Index into the FlexrayConfig.frame_table (self reference).
+    frame_table_index:uint16;
+    /// Config: FlexRay controller/interface internal reference.
+    lpdu_table_index:uint16;
+    /// Config: Frame direction.
+    direction:FlexrayDirection;
+    /// Config: Channels the frame will be sent over.
+    channel:FlexrayChannel;
+    /// Config: Transmit mode of the frame.
+    transmit_mode:FlexrayTransmitMode;
+}
+
+/**
+    FlexRay Metadata
+    ----------------
+*/
+
+union FlexrayMetadataType {
+    Config:FlexrayConfig,
+    Status:FlexrayStatus,
+    Lpdu:FlexrayLpdu,
+}
+
+table FlexrayMetadata {
+    /// FlexRay Metadata can be one of several Tables.
+    metadata:FlexrayMetadataType;
+}
+
+
+/**
     PDU Object / Stream
     -------------------
 */
@@ -260,6 +510,7 @@ union TransportMetadata {
     Can:CanMessageMetadata,
     Ip:IpMessageMetadata,
     Struct:StructMetadata,
+    Flexray:FlexrayMetadata,
 }
 
 table Pdu {
@@ -276,10 +527,12 @@ table Pdu {
         These fields are (typically) encoded as a part of the MIMEtype which
         configures the source of a PDU stream.
     */
-    /// Identifier: SWC ID of _originating_ this PDU.
+    /// Identifier: SWC ID of SWC _originating_ this PDU.
     swc_id:uint32;
     /// Identifier: ECU ID of ECU _originating_ this PDU.
     ecu_id:uint32;
+    /// Identifier: FlexRay CC (Communication Controller) ID of ECU/CC _originating_ this PDU.
+    cc_id:uint32;
 }
 
 table Stream {
@@ -287,10 +540,13 @@ table Stream {
     pdus:[Pdu];
 
     /// Metadata: Node UID of the Simulation (or System) node which is sending
-    ///  this stream object. Used by a Node to detect incomming stream objects
+    ///  this stream object. Used by a Node to detect incoming stream objects
     ///  which the Node had previously sent (i.e. an echo from the underlying
     ///  implementation of the stream transport).
     node_uid:uint32;
+
+    /// Metadata: Simulation Time when this stream was produced.
+    simulation_time:double;
 }
 
 root_type Stream;
