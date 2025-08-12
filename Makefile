@@ -67,12 +67,14 @@ builders:
 
 build:
 	@docker run -it --rm \
+		--user $$(id -u):$$(id -g) \
 		--volume $$(pwd):/tmp/repo \
 		--env PACKAGE_VERSION=$(PACKAGE_VERSION) \
 		--workdir /tmp/repo \
 		$(FLATC_BUILDER_IMAGE) \
 		/bin/bash -c "make fbs"
 	@docker run -it --rm \
+		--user $$(id -u):$$(id -g) \
 		--volume $$(pwd):/tmp/repo \
 		--env PIP_EXTRA_INDEX_URL=$(PIP_EXTRA_INDEX_URL) \
 		--env PACKAGE_VERSION=$(PACKAGE_VERSION) \
@@ -137,6 +139,7 @@ dist_package:
 
 dist:
 	@docker run -it --rm \
+		--user $$(id -u):$$(id -g) \
 		--volume $$(pwd):/tmp/repo \
 		--env PIP_EXTRA_INDEX_URL=$(PIP_EXTRA_INDEX_URL) \
 		--env PACKAGE_VERSION=$(PACKAGE_VERSION) \
