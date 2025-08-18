@@ -369,6 +369,17 @@ enum FlexrayConfigOp:byte {
 */
 
 table FlexrayConfig {
+    /**
+        Node Config Properties (Codec internal)
+        ----------------------
+    */
+    /// Config: Node configured Virtual Coldstart Nodes.
+    vcn:[FlexrayNodeIdentifier];
+
+    /**
+        FlexRay Controller Properties
+        -----------------------------
+    */
     /// Config: Macroticks per communication cycle (10..16000 MT).
     macrotick_per_cycle:uint16;
     /// Config: Micorticks per communication cycle (640..640000 uT).
