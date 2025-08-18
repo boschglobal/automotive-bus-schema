@@ -400,7 +400,7 @@ table FlexrayConfig {
     /// Config: The FlexRay bitrate.
     bit_rate:FlexrayBitrate;
     /// Config: Channels enabled.
-    channels_enabled:FlexrayChannel;
+    channel_enable:FlexrayChannel;
 
     /**
         Coldstart & Sync Config Properties
@@ -470,6 +470,9 @@ table FlexrayStatus {
 table FlexrayLpdu {
     /// Frame: Cycle the frame was received on.
     cycle:uint8;
+
+    /// Frame: Index into Frame Config table.
+    frame_config_index:uint16;
     
     /// Frame: The frame header has the 'Null Frame' indicator set.
     null_frame:bool;
