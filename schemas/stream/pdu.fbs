@@ -382,8 +382,8 @@ table FlexrayConfig {
     */
     /// Config: Macroticks per communication cycle (10..16000 MT).
     macrotick_per_cycle:uint16;
-    /// Config: Micorticks per communication cycle (640..640000 uT).
-    microtick_per_cycle:uint16;
+    /// Config: Microticks per communication cycle (640..640000 uT).
+    microtick_per_cycle:uint32;
     /// Config: Start of network idle, marks start-of-end of communication cycle (7..15997 MT).
     network_idle_start:uint16;
     /// Config: Length of a static slot (4..659 MT).
@@ -579,3 +579,4 @@ table Stream {
 
 root_type Stream;
 file_identifier "SPDU"; // Stream of PDUs.
+
