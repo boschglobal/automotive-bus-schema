@@ -485,6 +485,9 @@ table FlexrayLpdu {
     
     /// Frame: Status of this frame (actual/observed status).
     status:FlexrayLpduStatus;
+
+    /// Frame: Macrotick the frame was received on (testing/internal use only).
+    macrotick:uint16;
 }
 
 table FlexrayLpduConfig {
@@ -579,4 +582,5 @@ table Stream {
 
 root_type Stream;
 file_identifier "SPDU"; // Stream of PDUs.
+
 
