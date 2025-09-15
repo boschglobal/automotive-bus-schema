@@ -375,6 +375,10 @@ table FlexrayConfig {
     */
     /// Config: Node configured Virtual Coldstart Nodes.
     vcn:[FlexrayNodeIdentifier];
+    /// Config: Initial FlexRay POC State for Channel A.
+    initial_poc_state_cha:FlexrayPocState;
+    /// Config: Initial FlexRay POC State for Channel B.
+    initial_poc_state_chb:FlexrayPocState;
 
     /**
         FlexRay Controller Properties
@@ -582,5 +586,6 @@ table Stream {
 
 root_type Stream;
 file_identifier "SPDU"; // Stream of PDUs.
+
 
 
