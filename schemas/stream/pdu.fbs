@@ -379,6 +379,8 @@ table FlexrayConfig {
     initial_poc_state_cha:FlexrayPocState;
     /// Config: Initial FlexRay POC State for Channel B.
     initial_poc_state_chb:FlexrayPocState;
+    /// Config: Inhibit NULL Frames.
+    inhibit_null_frames:bool;
 
     /**
         FlexRay Controller Properties
@@ -515,8 +517,10 @@ table FlexrayLpduConfig {
     channel:FlexrayChannel;
     /// Config: Transmit mode of the frame.
     transmit_mode:FlexrayTransmitMode;
-    /// Frame: Status of this frame (actual/observed status).
+    /// Config: Status of this frame (actual/observed status).
     status:FlexrayLpduStatus;
+    /// Config: Inhibit NULL (null frames not indicated to Rx nodes).
+    inhibit_null:bool;
 }
 
 /**
@@ -586,6 +590,7 @@ table Stream {
 
 root_type Stream;
 file_identifier "SPDU"; // Stream of PDUs.
+
 
 
 
