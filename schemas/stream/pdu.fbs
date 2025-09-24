@@ -201,10 +201,6 @@ union IpAddr {
 }
 
 table IpMessageMetadata {
-    /**
-        Ethernet (IEEE 802.1Q)
-        ----------------------
-    */
     /// Ethernet: Destination MAC (stored in lower 48-bits, transmission order).
     ///  example: uint64 := XX-XX-01-23-45-67-89-AB
     eth_dst_mac:uint64;
@@ -221,10 +217,6 @@ table IpMessageMetadata {
     /// Ethernet: TCI: VLAN identifier.
     eth_tci_vid:uint16;
 
-    /**
-        IP Protocols
-        ------------
-    */
     /// IP: Address.
     ip_addr:IpAddr;
     /// IP: Protocol Specifier.
@@ -234,10 +226,7 @@ table IpMessageMetadata {
     /// IP: TCP/UDP Destination Port.
     ip_dst_port:uint16;
 
-    /**
-        Adapter Protocols
-        -----------------
-    */
+    /// Adapter: Socked adapter table.
     adapter:SocketAdapter;
 }
 
@@ -348,7 +337,7 @@ enum FlexrayPocCommand:byte {
     Nop = 9,
 }
 
-enum FlexrayLpduStatus: byte {
+enum FlexrayLpduStatus:byte {
     None = 0,
     Transmitted = 1,
     NotTransmitted = 2,
@@ -363,80 +352,73 @@ enum FlexrayConfigOp:byte {
     FrameTableDelete = 3,
 }
 
+enum FlexrayBridgeMode:byte {
+    None = 0,
+    Sync = 1,
+    NonSync = 2,
+}
+
 /**
     FlexRay Config Metadata
     -----------------------
 */
 
 table FlexrayConfig {
-    /**
-        Node Config Properties (Codec internal)
-        ----------------------
-    */
-    /// Config: Node configured Virtual Coldstart Nodes.
+    /// Config: Node: Node configured Virtual Coldstart Nodes.
     vcn:[FlexrayNodeIdentifier];
-    /// Config: Initial FlexRay POC State for Channel A.
+    /// Config: Node: Initial FlexRay POC State for Channel A.
     initial_poc_state_cha:FlexrayPocState;
-    /// Config: Initial FlexRay POC State for Channel B.
+    /// Config: Node: Initial FlexRay POC State for Channel B.
     initial_poc_state_chb:FlexrayPocState;
-    /// Config: Inhibit NULL Frames.
+    /// Config: Node: Inhibit NULL Frames.
     inhibit_null_frames:bool;
 
-    /**
-        FlexRay Controller Properties
-        -----------------------------
-    */
-    /// Config: Macroticks per communication cycle (10..16000 MT).
+    /// Config: Controller: Macroticks per communication cycle (10..16000 MT).
     macrotick_per_cycle:uint16;
-    /// Config: Microticks per communication cycle (640..640000 uT).
+    /// Config: Controller: Microticks per communication cycle (640..640000 uT).
     microtick_per_cycle:uint32;
-    /// Config: Start of network idle, marks start-of-end of communication cycle (7..15997 MT).
+    /// Config: Controller: Start of network idle, marks start-of-end of communication cycle (7..15997 MT).
     network_idle_start:uint16;
-    /// Config: Length of a static slot (4..659 MT).
+    /// Config: Controller: Length of a static slot (4..659 MT).
     static_slot_length:uint16;
-    /// Config: Number of static slots (2..1023).
+    /// Config: Controller: Number of static slots (2..1023).
     static_slot_count:uint16;
-    /// Config: Length of a mimi slot (2..63 MT).
+    /// Config: Controller: Length of a mimi slot (2..63 MT).
     minislot_length:uint8;
-    /// Config: Number of mini slots (0..7986).
+    /// Config: Controller: Number of mini slots (0..7986).
     minislot_count:uint16;
-    /// Config: Static segment payload length (0..254 bytes).
+    /// Config: Controller: Static segment payload length (0..254 bytes).
     static_slot_payload_length:uint32;
 
-    /// Config: The FlexRay bitrate.
+    /// Config: Controller: The FlexRay bitrate.
     bit_rate:FlexrayBitrate;
-    /// Config: Channels enabled.
+    /// Config: Controller: Channels enabled.
     channel_enable:FlexrayChannel;
 
-    /**
-        Coldstart & Sync Config Properties
-        ----------------------------------
-    */
-    /// Config: Coldstart node (1=yes, 0=no).
+    /// Config: Coldstart: Coldstart node (1=yes, 0=no).
     coldstart_node:bool;
-    /// Config: Sync node (1=yes, 0=no).
+    /// Config: Coldstart: Sync node (1=yes, 0=no).
     sync_node: bool;
-    /// Config: Coldstart attempts (2..31).
+    /// Config: Coldstart: Coldstart attempts (2..31).
     coldstart_attempts:uint8;
-    /// Config: Wakeup channel selector (0=A, 1=B).
+    /// Config: Coldstart: Wakeup channel selector (0=A, 1=B).
     wakeup_channel_select:uint8;
-    /// Config: Startup in single slot mode.
+    /// Config: Coldstart: Startup in single slot mode.
     single_slot_enabled:bool;
-    /// Config: Key slot id (for simplified startup).
+    /// Config: Coldstart: Key slot id (for simplified startup).
     key_slot_id:uint16;
-    /// Config: Key slot Payload (related to LPDU).
+    /// Config: Coldstart: Key slot Payload (related to LPDU).
     key_slot_payload:[uint8];
-    /// Config: Key slot LPDU (for startup with payload).
+    /// Config: Coldstart: Key slot LPDU (for startup with payload).
     key_slot_lpdu:FlexrayLpdu;
 
-    /**
-        Frame Config Table
-        ------------------
-    */
-    /// Config: Frame/LPDU static config table.
+    /// Config: Frame: Frame/LPDU static config table.
     frame_table:[FlexrayLpduConfig];
-    /// Config: Config operation, relates specifically to 'frame_table'.
+    /// Config: Frame: Config operation, relates specifically to 'frame_table'.
     config_op: FlexrayConfigOp;
+
+    /// Config: Node: Bridge mode selector.
+    bridge_mode: FlexrayBridgeMode;
 }
 
 /**
