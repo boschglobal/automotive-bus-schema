@@ -352,10 +352,9 @@ enum FlexrayConfigOp:byte {
     FrameTableDelete = 3,
 }
 
-enum FlexrayBridgeMode:byte {
+enum FlexrayBusModelMode:byte {
     None = 0,
-    Sync = 1,
-    NonSync = 2,
+    Pop = 1,
 }
 
 /**
@@ -415,10 +414,12 @@ table FlexrayConfig {
     /// Config: Frame: Frame/LPDU static config table.
     frame_table:[FlexrayLpduConfig];
     /// Config: Frame: Config operation, relates specifically to 'frame_table'.
-    config_op: FlexrayConfigOp;
+    config_op:FlexrayConfigOp;
 
-    /// Config: Node: Bridge mode selector.
-    bridge_mode: FlexrayBridgeMode;
+    /// Config: Node: Bus Model mode selector.
+    bus_model_mode:FlexrayBusModelMode;
+    /// Config: Node: Node name (supports debug/logging).
+    node_name:string;
 }
 
 /**
@@ -517,10 +518,16 @@ union FlexrayMetadataType {
 }
 
 table FlexrayMetadata {
+    /// FlexRay Metadata: Node identifier of the _sending_ node.
     node_ident:FlexrayNodeIdentifier;
 
-    /// FlexRay Metadata can be one of several Tables.
+    /// FlexRay Metadata: Metadata table.
     metadata:FlexrayMetadataType;
+
+    /// FlexRay Metadata: PoP Node identifier of the node this message represents.
+    ///     PoP:node_ident(0.0.0) sends message to node by setting pop_node_ident(1.0.0)
+    ///     PoP Bus Model exchanges: node_ident <= pop_node_ident
+    pop_node_ident:FlexrayNodeIdentifier;
 }
 
 
