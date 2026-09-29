@@ -1,0 +1,159 @@
+//***************************************************************************
+// Copyright (c) 2026 for information on the respective copyright owner
+// see the NOTICE file and/or the following repository:
+//     https://github.com/boschglobal/automotive-bus-schema
+//
+// SPDX-License-Identifier: Apache-2.0
+//***************************************************************************
+
+
+namespace AutomotiveBus.Diagnostic;
+
+
+/**
+    IDL for Automotive Bus - Diagnostic Interface - TP
+    ==================================================
+
+    Transport Protocol
+        * ISO-TP (ISO 15765-2)
+        * DoIP (ISO 13400)
+        * Diagnostics on FlexRay (ISO 10681-2)
+        * LIN (part of ISO 17987-2)
+
+    MIME Type : application/x-automotive-bus; interface=diagnostic; type=tp; schema=fbs
+    Flatbuffers file identifier : DITP
+*/
+
+
+
+/**
+    ISO-TP (ISO 15765-2)
+    --------------------
+*/
+namespace AutomotiveBus.Diagnostic.IsoTp;
+
+enum FlowStatus : byte {
+    ContinueToSend = 0,
+    Wait = 1,
+    OverflowOrAbort = 2,
+}
+
+table SingleFrame {
+    /// ISO-TP: Single packet data length
+    ///     CAN: 0 - 7
+    ///     CAN-FD: 0 - 62 (raw frame sizes limited to: 8, 12, 16, 20, 24, 32, 48, 64)
+    data_length: uint16;
+    /// ISO-TP: Single packet payload.
+    payload: [uint8];
+}
+
+table FirstFrame {
+    /// ISO-TP: Multi packet _total_ payload length (CAN: 0 - 4095, CAN-FD: 0 - 4GB).
+    ///     CAN: 0 - 7
+    ///     CAN-FD: 0 - 62 (raw frame sizes limited to: 8, 12, 16, 20, 24, 32, 48, 64)
+    total_length: uint32;
+    /// ISO-TP: First payload segment.
+    payload: [uint8];
+}
+
+table ConsecutiveFrame {
+    /// ISO-TP: Sequence number (incrementing per frame, starts from 1, rolls over to 0).
+    ///     CAN: 0 - 7
+    ///     CAN-FD: 0 - 63 (raw frame sizes limited to: 8, 12, 16, 20, 24, 32, 48, 64)
+    sequence_number: uint8;
+    /// ISO-TP: Subsequent payload segment.
+    payload: [uint8];
+}
+
+table FlowControl {
+    /// ISO-TP: Flow status indicator.
+    status: FlowStatus;
+    /// ISO-TP: Maximum consecutive frames before sender must wait for next FlowControl frame.
+    ///     0: Indicates no flow control, sender may send all remaining frames.
+    block_size: uint8;
+    /// ISO-TP: Minimum separation time between consecutive frames.
+    ///     0x00 to 0x7F: Represent 0 to 127 milliseconds.
+    ///     0xF1 to 0xF9: Represent 100 to 900 microseconds (e.g., 0xF5 = 500us).
+    st_min_ms: uint8;
+}
+
+union FramePayload {
+    SingleFrame,
+    FirstFrame,
+    ConsecutiveFrame,
+    FlowControl
+}
+
+table Frame {
+    /// ISO-TP: Individual frames.
+    frame: FramePayload;
+
+    /// Metadata: Frame transmission timestamp.
+    timestamp_us: uint64;
+}
+
+table Metadata {
+    /// ISO-TP: CAN identifier associated with the ISO-TP endpoint receiving this diagnostic message.
+    can_id: uint32;
+    /// ISO-TP: Total payload length (CAN: 0 - 4095, CAN-FD: 0 - 4GB).
+    total_length: uint32;
+}
+
+
+
+/**
+    DoIP (ISO 13400)
+    ----------------
+*/
+namespace AutomotiveBus.Diagnostic.DoIp;
+
+enum PayloadType : uint16 {
+    GenericHeaderNegativeAcknowledge = 0x0000,
+    VehicleIdentificationRequest     = 0x0001,
+    VehicleIdentificationResponse    = 0x0004,
+    RoutingActivationRequest         = 0x0005,
+    RoutingActivationResponse        = 0x0006,
+    AliveCheckRequest                = 0x0007,
+    AliveCheckResponse               = 0x0008,
+    DiagnosticMessage                = 0x8001,
+    DiagnosticMessageAcknowledge     = 0x8002,
+    DiagnosticMessageNegativeAck     = 0x8003,
+}
+
+table Metadata {
+    protocol_version: uint8;
+    payload_type: PayloadType;
+    source_address: uint16;
+    target_address: uint16;
+}
+
+
+
+/**
+    Diagnostic Message
+    ------------------
+*/
+namespace AutomotiveBus.Diagnostic.Tp;
+
+union TransportMetadata {
+    IsoTp: AutomotiveBus.Diagnostic.IsoTp.Metadata,
+    DoIp: AutomotiveBus.Diagnostic.DoIp.Metadata
+}
+
+table Message {
+    /// TP: Transport metadata.
+    transport_meta: TransportMetadata;
+    /// TP: Message payload of the diagnostic message.
+    payload: [uint8];
+
+    /// ISO-TP: Frames representing this message.
+    frames: [AutomotiveBus.Diagnostic.IsoTp.Frame];
+
+    /// Metadata: Start transmission timestamp.
+    start_timestamp_us: uint64;
+    /// Metadata: End transmission timestamp.
+    end_timestamp_us: uint64;
+}
+
+root_type Message;
+file_identifier "DITP";
