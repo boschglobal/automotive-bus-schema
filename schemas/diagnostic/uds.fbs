@@ -1,0 +1,505 @@
+//***************************************************************************
+// Copyright (c) 2026 for information on the respective copyright owner
+// see the NOTICE file and/or the following repository:
+//     https://github.com/boschglobal/automotive-bus-schema
+//
+// SPDX-License-Identifier: Apache-2.0
+//***************************************************************************
+
+namespace AutomotiveBus.Diagnostic.Uds;
+
+
+/**
+    IDL for Automotive Bus - Diagnostic Interface - UDS
+    ===================================================
+
+    Unified Diagnostic Services (ISO 14229)
+
+    MIME Type : application/x-automotive-bus; interface=diagnostic; type=uds; schema=fbs
+    Flatbuffers file identifier : DUDS
+*/
+
+
+
+/**
+    Diagnostic and Communication Management Unit (0x10 - 0x3E)
+    ----------------------------------------------------------
+*/
+
+enum NegativeResponseCode : uint8 {
+    Uninitialized                               = 0,
+    GeneralReject                               = 0x10,
+    ServiceNotSupported                         = 0x11,
+    SubFunctionNotSupported                     = 0x12,
+    IncorrectMessageLengthOrInvalidFormat       = 0x13,
+    ResponseTooLong                             = 0x14,
+    BusyRepeatRequest                           = 0x21,
+    ConditionsNotCorrect                        = 0x22,
+    RequestSequenceError                        = 0x24,
+    RequestOutOfRange                           = 0x31,
+    SecurityAccessDenied                        = 0x33,
+    InvalidKey                                  = 0x35,
+    ExceededNumberOfAttempts                    = 0x36,
+    RequiredTimeDelayNotExpired                 = 0x37,
+    UploadDownloadNotAccepted                   = 0x70,
+    TransferDataSuspended                       = 0x71,
+    GeneralProgrammingFailure                   = 0x72,
+    WrongBlockSequenceCounter                   = 0x73,
+    RequestCorrectlyReceived_ResponsePending    = 0x78,
+}
+
+table NegativeResponse {
+    rejected_sid: uint8;
+    nrc: NegativeResponseCode;
+}
+
+// --- [ 0x10 / 0x50 ] DiagnosticSessionControl ---
+enum DiagnosticSessionType : uint8 {
+    Uninitialized                               = 0,
+    DefaultSession                              = 0x01,
+    ProgrammingSession                          = 0x02,
+    ExtendedDiagnostic                          = 0x03,
+    SafetySystemDiagnostic                      = 0x04,
+}
+table DiagnosticSessionControlRequest {
+    diagnostic_session_type: DiagnosticSessionType;
+}
+table DiagnosticSessionControlResponse {
+    diagnostic_session_type: DiagnosticSessionType;
+    session_parameter_record: [uint8]; // Timing values (P2 and P2* max) [50]
+}
+
+// --- [ 0x11 / 0x51 ] EcuReset ---
+enum ResetType : uint8 {
+    Uninitialized                               = 0,
+    HardReset                                   = 0x01,
+    KeyOffOnReset                               = 0x02,
+    SoftReset                                   = 0x03,
+    EnableRapidPowerShutDown                    = 0x04,
+    DisableRapidPowerShutDown                   = 0x05,
+}
+table EcuResetRequest {
+    reset_type: ResetType;
+}
+table EcuResetResponse {
+    reset_type: ResetType;
+    power_down_time_sec: uint8; // Optional execution delay tracking
+}
+
+// --- [ 0x27 / 0x67 ] SecurityAccess ---
+table SecurityAccessRequest {
+    security_level: uint8; // Odd numbers represent RequestSeed steps
+    access_data_record: [uint8]; // Optional parameters sent to server
+}
+table SecurityAccessResponse {
+    security_level: uint8;
+    security_seed_or_key_status: [uint8]; // Returned raw cryptographic seed bytes
+}
+
+// --- [ 0x28 / 0x68 ] CommunicationControl ---
+enum CommunicationControlType : uint8 {
+    EnableRxAndTx                               = 0x00,
+    EnableRxAndDisableTx                        = 0x01,
+    DisableRxAndEnableTx                        = 0x02,
+    DisableRxAndTx                              = 0x03,
+    EnableRxAndTxWithEnhancedAddress            = 0x04,
+    EnableRxAndDisableTxWithEnhancedAddress     = 0x05,
+}
+table CommunicationControlRequest {
+    control_type: CommunicationControlType;
+    communication_type: uint8; // Bitmask mapping application/network message types
+}
+table CommunicationControlResponse {
+    control_type: CommunicationControlType;
+}
+
+// --- [ 0x3E / 0x7E ] TesterPresent ---
+table TesterPresentRequest {
+    sub_function: uint8; // Typically 0x00 (Zero with suppress positive response support)
+}
+table TesterPresentResponse {
+    sub_function: uint8;
+}
+
+
+
+/**
+    Data Transmission Functional Unit (0x22 - 0x3D)
+    -----------------------------------------------
+*/
+
+enum AddressSizing : uint8 {
+    Uninitialized                               = 0,
+    TwoByteAddress                              = 2,
+    ThreeByteAddress                            = 3,
+    FourByteAddress                             = 4,
+    EightByteAddress                            = 8
+}
+
+enum LengthSizing : uint8 {
+    Uninitialized                               = 0,
+    OneByteLength                               = 1,
+    TwoByteLength                               = 2,
+    ThreeByteLength                             = 3,
+    FourByteLength                              = 4,
+    EightByteLength                             = 8
+}
+
+struct AddressLengthFormatIdentifier {
+    address: AddressSizing;
+    size: LengthSizing;
+}
+
+// --- [ 0x22 / 0x62 ] ReadDataByIdentifier ---
+table ReadDataByIdentifierRequest {
+    data_id: [uint16];
+}
+table ReadDataByIdentifierRecord {
+    data_id: uint16;
+    data_record: [uint8];
+}
+table ReadDataByIdentifierResponse {
+    records: [ReadDataByIdentifierRecord];
+}
+
+// --- [ 0x2E / 0x6E ] WriteDataByIdentifier ---
+table WriteDataByIdentifierRequest {
+    data_id: uint16;
+    data_record: [uint8];
+}
+table WriteDataByIdentifierResponse {
+    data_id: uint16;
+}
+
+// --- [ 0x23 / 0x63 ] ReadMemoryByAddress ---
+table ReadMemoryByAddressRequest {
+    alfid: AddressLengthFormatIdentifier;
+    memory_address: uint64;
+    memory_size: uint64;
+}
+table ReadMemoryByAddressResponse {
+    data_record: [uint8];
+}
+
+// --- [ 0x3D / 0x7D ] WriteMemoryByAddress ---
+table WriteMemoryByAddressRequest {
+    alfid: AddressLengthFormatIdentifier;
+    memory_address: uint64;
+    memory_size: uint64;
+    data_record: [uint8];
+}
+table WriteMemoryByAddressResponse {
+    alfid: AddressLengthFormatIdentifier;
+    memory_address: uint64;
+    memory_size: uint64;
+}
+
+
+
+/**
+    Stored Data Files & DTC Fault Memory Unit (0x14 - 0x19)
+    -------------------------------------------------------
+*/
+
+enum DtcGroupLiteral : uint32 {
+    PowertrainDtcGroup                          = 0x000000,
+    ChassisDtcGroup                             = 0x400000,
+    BodyDtcGroup                                = 0x800000,
+    NetworkDtcGroup                             = 0xC00000,
+    AllDtcGroup                                 = 0xFFFFFF,
+}
+
+enum DtcSubFunction : uint8 {
+    Uninitialized                               = 0,
+    ReportNumberOfDTCByStatusMask               = 0x01,
+    ReportDTCByStatusMask                       = 0x02,
+    ReportDTCSnapshotIdentification             = 0x03,
+    ReportDTCSnapshotRecordByDTCNumber          = 0x04,
+    ReportDTCStoredDataByRecordNumber           = 0x05,
+    ReportDTCExtendedDataRecordByDTCNumber      = 0x06,
+    ReportNumberOfDTCBySeverityMaskRecord       = 0x07,
+    ReportDTCBySeverityMaskRecord               = 0x08,
+    ReportSeverityInformationOfDTC              = 0x09,
+    ReportSupportedDTC                          = 0x0A,
+    ReportPermanentStatusDTC                    = 0x15,
+}
+
+enum DtcStatusFlags : uint8 {
+    Uninitialized                               = 0,
+    TestFailed                                  = 0x01,
+    TestFailedThisMonitoringCycle               = 0x02,
+    PendingDTC                                  = 0x04,
+    ConfirmedDTC                                = 0x08,
+    TestNotCompletedSinceLastClear              = 0x10,
+    TestFailedSinceLastClear                    = 0x20,
+    TestNotCompletedThisMonitoringCycle         = 0x40,
+    WarningIndicatorRequested                   = 0x80,
+}
+
+// --- [ 0x14 / 0x54 ] ClearDiagnosticInformation ---
+table ClearDiagnosticInformationRequest {
+    /// 3-byte layout identifying targeted DTC family clusters (e.g., 0xFFFFFF for All)
+    group_of_dtc: uint32;
+}
+table ClearDiagnosticInformationResponse {
+    group_of_dtc: uint32;
+}
+
+// --- [ 0x19 / 0x59 ] ReadDtcInformation ---
+table ReadDtcInformationRequest {
+    sub_function: DtcSubFunction;
+    status_mask: DtcStatusFlags;
+
+    /// Optional, use when sub_function is 0x04 or 0x06. 3-byte layout.
+    mask_num: uint32;
+    snapshot_record_number: uint8;
+}
+table ReadDtcInformationResponse {
+    sub_function: DtcSubFunction;
+    status_availability_mask: DtcStatusFlags;
+    dtc_and_status_record: [uint8];
+}
+
+
+
+/**
+    Input/Output & Control Unit (0x2F - 0x31)
+    -----------------------------------------
+*/
+
+enum InputOutputControlParameter : uint8 {
+    ReturnControlToECU                          = 0x00,
+    ResetToDefault                              = 0x01,
+    FreezeCurrentState                          = 0x02,
+    ShortTermAdjustment                         = 0x03,
+}
+
+enum RoutineControlType : uint8 {
+    Uninitialized                               = 0,
+    StartRoutine                                = 0x01,
+    StopRoutine                                 = 0x02,
+    RequestRoutineResults                       = 0x03,
+}
+
+// --- [ 0x2F / 0x6F ] InputOutputControlByIdentifier ---
+table InputOutputControlByIdentifierRequest {
+    data_id: uint16;
+    parameter: InputOutputControlParameter;
+    state: [uint8];
+    enable_mask_record: [uint8];
+}
+table InputOutputControlByIdentifierResponse {
+    data_id: uint16;
+    parameter: InputOutputControlParameter;
+    status_record: [uint8];
+}
+
+// --- [ 0x31 / 0x71 ] RoutineControl ---
+table RoutineControlRequest {
+    control_type: RoutineControlType;
+    id: uint16; // e.g., 0xFF00 = EraseMemory
+    control_option_record: [uint8];
+}
+table RoutineControlResponse {
+    control_type: RoutineControlType;
+    id: uint16;
+    status_record: [uint8];
+}
+
+
+
+/**
+    Upload/Download Flashing Program Unit (0x34 - 0x37)
+    ---------------------------------------------------
+*/
+
+enum CompressionMethod : uint8 {
+    NoCompression                               = 0,
+    Deflate                                     = 1, // IETF RFC 1951 zip compression
+    ManufacturerSpecific                        = 15,
+}
+
+enum EncryptionMethod : uint8 {
+    NoEncryption                                = 0,
+    Aes128                                      = 1,
+    Rsa2048                                     = 2,
+    ManufacturerSpecific                        = 15,
+}
+
+enum BlockLengthSizing : uint8 {
+    Uninitialized                               = 0,
+    OneByteLength                               = 1,
+    TwoByteLength                               = 2,
+    ThreeByteLength                             = 3,
+    FourByteLength                              = 4,
+}
+
+struct DataFormatIdentifier {
+    compression: CompressionMethod;
+    encryption:  EncryptionMethod;
+}
+
+struct LengthFormatIdentifier {
+    max_block_length_size: BlockLengthSizing;
+
+    /// UDS: Low nibble reserved by ISO 14229-1 for future definition.
+    reserved: uint8;
+}
+
+// --- [ 0x34 / 0x74 ] RequestDownload ---
+table RequestDownloadRequest {
+    dfid: DataFormatIdentifier;
+    alfid: AddressLengthFormatIdentifier;
+    memory_address: uint64;
+    memory_size: uint64;
+}
+table RequestDownloadResponse {
+    lfid: LengthFormatIdentifier;
+    max_number_of_block_length: uint32;
+}
+
+// --- [ 0x35 / 0x75 ] RequestUpload ---
+table RequestUploadRequest {
+    dfid: DataFormatIdentifier;
+    alfid: AddressLengthFormatIdentifier;
+    memory_address: uint64;
+    memory_size: uint64;
+}
+table RequestUploadResponse {
+    lfid: LengthFormatIdentifier;
+    max_number_of_block_length: uint32;
+}
+
+// --- [ 0x36 / 0x76 ] TransferData ---
+table TransferDataRequest {
+    /// UDS: Rolling counter starting at 1.
+    block_sequence_counter: uint8;
+    /// UDS: Segment being flashed (of program data binary).
+    parameter_record: [uint8];
+}
+table TransferDataResponse {
+    block_sequence_counter: uint8;
+    parameter_record: [uint8];
+}
+
+// --- [ 0x37 / 0x77 ] RequestTransferExit ---
+table RequestTransferExitRequest {
+    parameter_record: [uint8];
+}
+table RequestTransferExitResponse {
+    parameter_record: [uint8];
+}
+
+
+
+/**
+    Unified UDS Request Union
+    -------------------------
+*/
+
+enum UdsServiceId : ubyte {
+    Uninitialized                               = 0,
+
+    // --- Diagnostic and Communication Management ---
+    DiagnosticSessionControlRequest             = 0x10,
+
+    // --- Requests ---
+    EcuResetRequest                             = 0x11,
+    ClearDiagnosticInformationRequest           = 0x14,
+    ReadDtcInformationRequest                   = 0x19,
+    ReadDataByIdentifierRequest                 = 0x22,
+    ReadMemoryByAddressRequest                  = 0x23,
+    SecurityAccessRequest                       = 0x27,
+    CommunicationControlRequest                 = 0x28,
+    WriteDataByIdentifierRequest                = 0x2E,
+    InputOutputControlByIdentifierRequest       = 0x2F,
+    RoutineControlRequest                       = 0x31,
+    RequestDownloadRequest                      = 0x34,
+    RequestUploadRequest                        = 0x35,
+    TransferDataRequest                         = 0x36,
+    RequestTransferExitRequest                  = 0x37,
+    WriteMemoryByAddressRequest                 = 0x3D,
+    TesterPresentRequest                        = 0x3E,
+
+    // --- Positive Responses ---
+    DiagnosticSessionControlResponse            = 0x50,
+    EcuResetResponse                            = 0x51,
+    ClearDiagnosticInformationResponse          = 0x54,
+    ReadDtcInformationResponse                  = 0x59,
+    ReadDataByIdentifierResponse                = 0x62,
+    ReadMemoryByAddressResponse                 = 0x63,
+    SecurityAccessResponse                      = 0x67,
+    CommunicationControlResponse                = 0x68,
+    WriteDataByIdentifierResponse               = 0x6E,
+    InputOutputControlByIdentifierResponse      = 0x6F,
+    RoutineControlResponse                      = 0x71,
+    RequestDownloadResponse                     = 0x74,
+    RequestUploadResponse                       = 0x75,
+    TransferDataResponse                        = 0x76,
+    RequestTransferExitResponse                 = 0x77,
+    WriteMemoryByAddressResponse                = 0x7D,
+    TesterPresentResponse                       = 0x7E,
+    NegativeResponse                            = 0x7F
+}
+
+union ServicePrimitive {
+    // --- Core Infrastructure ---
+    NegativeResponse,
+
+    // --- Diagnostic and Communication Management ---
+    DiagnosticSessionControlRequest,
+    DiagnosticSessionControlResponse,
+    EcuResetRequest,
+    EcuResetResponse,
+    SecurityAccessRequest,
+    SecurityAccessResponse,
+    CommunicationControlRequest,
+    CommunicationControlResponse,
+    TesterPresentRequest,
+    TesterPresentResponse,
+
+    // --- Data Transmission Functional Unit ---
+    ReadDataByIdentifierRequest,
+    ReadDataByIdentifierResponse,
+    WriteDataByIdentifierRequest,
+    WriteDataByIdentifierResponse,
+    ReadMemoryByAddressRequest,
+    ReadMemoryByAddressResponse,
+    WriteMemoryByAddressRequest,
+    WriteMemoryByAddressResponse,
+
+    // --- Stored Data Files & DTC Fault Memory Unit ---
+    ClearDiagnosticInformationRequest,
+    ClearDiagnosticInformationResponse,
+    ReadDtcInformationRequest,
+    ReadDtcInformationResponse,
+
+    // --- Input/Output & Control Unit ---
+    InputOutputControlByIdentifierRequest,
+    InputOutputControlByIdentifierResponse,
+    RoutineControlRequest,
+    RoutineControlResponse,
+
+    // --- Upload/Download Flashing Program Unit ---
+    RequestDownloadRequest,
+    RequestDownloadResponse,
+    RequestUploadRequest,
+    RequestUploadResponse,
+    TransferDataRequest,
+    TransferDataResponse,
+    RequestTransferExitRequest,
+    RequestTransferExitResponse
+}
+
+
+table Message {
+    /// UDS: Set true if requested from a tester node.
+    is_request: bool;
+
+    /// UDS: Service primitive encapsulated in this message.
+    primitive: ServicePrimitive;
+    service_id: UdsServiceId;
+}
+
+root_type Message;
+file_identifier "DUDS";
