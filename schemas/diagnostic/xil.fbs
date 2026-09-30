@@ -1,0 +1,100 @@
+//***************************************************************************
+// Copyright (c) 2026 for information on the respective copyright owner
+// see the NOTICE file and/or the following repository:
+//     https://github.com
+//
+// SPDX-License-Identifier: Apache-2.0
+//***************************************************************************
+
+namespace AutomotiveBus.Diagnostic.Xil;
+
+
+/**
+    IDL for Automotive Bus - Diagnostic Interface - XiL
+    ===================================================
+
+    ASAM XiL
+
+    MIME Type : application/x-automotive-bus; interface=diagnostic; type=xil; schema=fbs
+    Flatbuffers file identifier : DXIL
+*/
+
+
+/**
+    XIL TO ECU DIAGNOSTIC DATA FLOW
+    -------------------------------
+
+    1. ECUtest Layer (.NET Runtime)
+       - Loads custom C# Wrapper DLL implementing XIL 'IDiagPort'.
+       - Captures script strings (e.g., "BCM", "ReadCoolantTemp").
+       - Serializes arguments into RPC requests using [xil.fbs].
+
+    ==> XIL Message Path (via UDP, TCP, or PubSub)
+
+    2. Diagnostic Service Layer (Core Engine: C, Go, etc.)
+       - Database Lookup: Maps string tokens to SID: 0x22, DID: 0x0105.
+       - UDS Message: Builds raw hex payloads and records traces via [uds.fbs].
+       - Network Layer: Packages bytes into [tp.fbs] if required by the target channel.
+
+    ==> Diag Message Path (via ISO-TP or DoIP)
+
+    3. ECU / vECU / Runnable (Target Module under Test)
+       - Processes physical network frames over CAN, CAN-FD, or Ethernet.
+       - Executes diagnostic microcode routines.
+       - Returns raw binary responses back up the pipeline execution stack.
+*/
+
+
+
+/**
+    XiL DiagPort
+    ------------
+*/
+namespace AutomotiveBus.Diagnostic.Xil.DiagPort;
+
+enum DiagnosticResult : uint32 {
+    E_OK           = 0,  // Execution completed successfully
+    E_FAILED       = 1,  // General execution or ODX database mapping failure
+    E_TIMEOUT      = 2,  // Hardware transceiver or network loop timeout
+    E_INVALID_ARGS = 3,  // Passed an unrecognized ECU or Job name string
+    E_BUS_ERROR    = 4,  // Physical wire fault encountered (Bus Off)
+}
+
+table ExecuteDiagnosticJob_Call {
+    ecu_name: string;
+    job_name: string;
+}
+table ExecuteDiagnosticJob_Return {
+    result: DiagnosticResult;
+    response_string: string;
+}
+
+table FaultMemory_Call {
+    ecu_name: string;
+    clear_all: bool;
+}
+table FaultMemory_Return {
+    result: DiagnosticResult;
+    active_dtc_codes: [string];
+}
+
+union MethodPayload {
+    ExecuteDiagnosticJob_Call,
+    ExecuteDiagnosticJob_Return,
+    FaultMemory_Call,
+    FaultMemory_Return
+}
+
+table XilRpcMessage {
+    call_id: uint32;
+    timestamp_us: uint64;
+    payload: MethodPayload;
+}
+
+rpc_service DiagPort {
+    ExecuteDiagnosticJob(ExecuteDiagnosticJob_Call): ExecuteDiagnosticJob_Return;
+    ManageFaultMemory(FaultMemory_Call): FaultMemory_Return;
+}
+
+root_type XilRpcMessage;
+file_identifier "DXIL";
