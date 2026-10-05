@@ -60,29 +60,29 @@ enum DiagnosticResult : uint32 {
     E_BUS_ERROR    = 4,  // Physical wire fault encountered (Bus Off)
 }
 
-table ExecuteDiagnosticJob_Call {
+table ExecuteDiagnosticJobCall {
     ecu_name: string;
     job_name: string;
 }
-table ExecuteDiagnosticJob_Return {
+table ExecuteDiagnosticJobReturn {
     result: DiagnosticResult;
     response_string: string;
 }
 
-table FaultMemory_Call {
+table FaultMemoryCall {
     ecu_name: string;
     clear_all: bool;
 }
-table FaultMemory_Return {
+table FaultMemoryReturn {
     result: DiagnosticResult;
     active_dtc_codes: [string];
 }
 
 union MethodPayload {
-    ExecuteDiagnosticJob_Call,
-    ExecuteDiagnosticJob_Return,
-    FaultMemory_Call,
-    FaultMemory_Return
+    ExecuteDiagnosticJobCall,
+    ExecuteDiagnosticJobReturn,
+    FaultMemoryCall,
+    FaultMemoryReturn
 }
 
 table XilRpcMessage {
@@ -92,8 +92,8 @@ table XilRpcMessage {
 }
 
 rpc_service DiagPort {
-    ExecuteDiagnosticJob(ExecuteDiagnosticJob_Call): ExecuteDiagnosticJob_Return;
-    ManageFaultMemory(FaultMemory_Call): FaultMemory_Return;
+    ExecuteDiagnosticJob(ExecuteDiagnosticJobCall): ExecuteDiagnosticJobReturn;
+    ManageFaultMemory(FaultMemoryCall): FaultMemoryReturn;
 }
 
 root_type XilRpcMessage;

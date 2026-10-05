@@ -1,0 +1,55 @@
+//***************************************************************************
+// Copyright (c) 2026 for information on the respective copyright owner
+// see the NOTICE file and/or the following repository:
+//     https://github.com/boschglobal/automotive-bus-schema
+//
+// SPDX-License-Identifier: Apache-2.0
+//***************************************************************************
+
+namespace AutomotiveBus.Diagnostic.ServiceRpc;
+
+/**
+    Generic RPC interface for dispatching a function on a named service.
+*/
+table MessageContext {
+    response_data: [ubyte];
+    request_data: [ubyte];
+
+    request_type: ubyte;
+    suppress_positive_response: ubyte;
+    source_of_request: ubyte;
+
+    context_id: ubyte;
+    rx_pdu_id: byte;
+}
+
+table InvokeCall {
+    service_name: string (required);
+    function_name: string (required);
+    op_status: ubyte;
+    message_context: MessageContext (required);
+}
+
+table InvokeReturn {
+    return_value: ubyte;
+    error_code: ubyte;
+    message_context: MessageContext (required);
+}
+
+union ServiceRpcPayload {
+    InvokeCall,
+    InvokeReturn
+}
+
+table ServiceRpcMessage {
+    call_id: uint32;
+    timestamp_us: uint64;
+    payload: ServiceRpcPayload;
+}
+
+rpc_service ServiceRpc {
+    Invoke(InvokeCall): InvokeReturn;
+}
+
+root_type ServiceRpcMessage;
+file_identifier "DSRP";
