@@ -12,12 +12,12 @@ namespace AutomotiveBus.Diagnostic.ServiceRpc;
     Generic RPC interface for dispatching a function on a named service.
 */
 table MessageContext {
-    response_data: [ubyte];
-    request_data: [ubyte];
+    request: [ubyte];
+    response: [ubyte];
 
     request_type: ubyte;
-    suppress_positive_response: ubyte;
-    source_of_request: ubyte;
+    request_source: ubyte;
+    response_required: bool = true;
 
     context_id: ubyte;
     rx_pdu_id: byte;
@@ -42,9 +42,31 @@ union ServiceRpcPayload {
 }
 
 table ServiceRpcMessage {
+    /// RPC: Call/Message/Request identifier.
     call_id: uint32;
-    timestamp_us: uint64;
+    /// RPC: Message payload.
     payload: ServiceRpcPayload;
+
+    /// Identifier: Target ECU/Runnable for this Service RPC.
+    ecu_name: string;
+    /// Identifier: Target ECU for this Service RPC.
+    ecu_id:uint32;
+    /// Identifier: Target Runnable for this Service RPC.
+    swc_id:uint32;
+    /// Identifier: Frame ID related to _this_ Service RPC message if it
+    ///  is transmitted on a bus (CAN, FlexRay, IP etc).
+    frame_id: uint32;
+
+    /// Metadata: Node UID of the Simulation (or System) node which is sending
+    ///  this stream object. Used by a Node to detect incoming stream objects
+    ///  which the Node had previously sent (i.e. an echo from the underlying
+    ///  implementation of the stream transport).
+    node_uid:uint32;
+
+    /// Metadata: Message timestamp in simulation time.
+    simulation_time: double;
+    /// Metadata: UTC timestamp (i.e. wall clock).
+    utc_time: uint64;
 }
 
 rpc_service ServiceRpc {
