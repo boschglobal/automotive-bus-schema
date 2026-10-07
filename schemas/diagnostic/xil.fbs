@@ -91,6 +91,7 @@ table DiagnosticProperty {
     `series`. `properties` carries string-valued ASAM value attributes.
 */
 table DiagnosticValue {
+    name: string;
     kind: DiagnosticValueKind = UNSPECIFIED;
     boolean_value: bool;
     signed_value: long;
@@ -155,14 +156,17 @@ table ExecuteJobCall {
 table ExecuteJobReturn {
     status: XilStatus = OK;
     values: [DataValue];
+    info: string;
 }
 
 table SendHexServiceCall {
     pdu: [ubyte] (required);
+    response_required: bool = true;
 }
 table SendHexServiceReturn {
     status: XilStatus = OK;
     response_pdu: [ubyte];
+    info: string;
 }
 
 table ReadDIDValueCall {
@@ -173,6 +177,7 @@ table ReadDIDValueReturn {
     status: XilStatus = OK;
     negative_response_code: ubyte;
     value: DidValue;
+    info: string;
 }
 
 table WriteDIDValueCall {
@@ -181,6 +186,7 @@ table WriteDIDValueCall {
 table WriteDIDValueReturn {
     status: XilStatus = OK;
     negative_response_code: ubyte;
+    info: string;
 }
 
 table ReadFaultMemoryCall {
@@ -189,12 +195,14 @@ table ReadFaultMemoryCall {
 table ReadFaultMemoryReturn {
     status: XilStatus = OK;
     trouble_codes: [DiagnosticTroubleCode];
+    info: string;
 }
 
 table ClearFaultMemoryCall {
 }
 table ClearFaultMemoryReturn {
     status: XilStatus = OK;
+    info: string;
 }
 
 union MethodPayload {
@@ -222,6 +230,8 @@ table XilRpcMessage {
     ecu_name: string (required);
     /// Identifier: Diagnostic identifier on ECU/Runnable.
     logical_link_name: string;
+    /// Metadata: Descriptive information about the target ECU.
+    ecu_information: string;
 
     /// Metadata: Node UID of the Simulation (or System) node which is sending
     ///  this stream object. Used by a Node to detect incoming stream objects
