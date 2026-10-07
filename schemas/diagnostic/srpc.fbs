@@ -8,35 +8,57 @@
 
 namespace AutomotiveBus.Diagnostic.ServiceRpc;
 
+
 /**
+    IDL for Automotive Bus - Diagnostic Interface - Service RPC
+    ===========================================================
+
+    Service RPC
+
+    MIME Type : application/x-automotive-bus; interface=diagnostic; type=srpc; schema=fbs
+    Flatbuffers file identifier : DSRP
+
+
     Generic RPC interface for dispatching a function on a named service.
 */
+
+
 table MessageContext {
+    /// Request: Container for the request content.
     request: [ubyte];
+    /// Response: Container for the response content.
     response: [ubyte];
 
+    /// Request: Type of request (transparent to the Service RPC).
     request_type: ubyte;
+    /// Request: Source of request (transparent to the Service RPC).
     request_source: ubyte;
+
+    /// Response: Include the request bytes in the response message.
+    response_include_request: bool;
+    /// Response: A response is returned in all cases, or only when an error has occurred."
     response_required: bool = true;
 
+    /// Metadata: An identifier for this message context.
     context_id: ubyte;
+    /// Metadata: Frame identifier when the response should be associated with a network pdu.
     rx_pdu_id: byte;
 }
 
 table InvokeCall {
-    service_name: string (required);
-    function_name: string (required);
+    service: string (required);
+    function: string (required);
     op_status: ubyte;
-    message_context: MessageContext (required);
+    ctx: MessageContext (required);
 }
 
 table InvokeReturn {
     return_value: ubyte;
     error_code: ubyte;
-    message_context: MessageContext (required);
+    ctx: MessageContext (required);
 }
 
-union ServiceRpcPayload {
+union Payload {
     InvokeCall,
     InvokeReturn
 }
@@ -45,7 +67,7 @@ table ServiceRpcMessage {
     /// RPC: Call/Message/Request identifier.
     call_id: uint32;
     /// RPC: Message payload.
-    payload: ServiceRpcPayload;
+    payload: Payload;
 
     /// Identifier: Target ECU/Runnable for this Service RPC.
     ecu_name: string;

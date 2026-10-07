@@ -134,10 +134,16 @@ table DidSelector {
     name: string;
 }
 
+table DidIdentity {
+    name: string;
+    identifier: ushort;
+}
+
 table DidValue {
     did: DidSelector (required);
     raw_value: [ubyte];
     values: [DataValue];
+    identity: DidIdentity;
 }
 
 table DiagnosticTroubleCode {
@@ -169,6 +175,25 @@ table SendHexServiceReturn {
     info: string;
 }
 
+table ReadFromAddressCall {
+    address: ulong;
+    number_of_bytes: ulong;
+}
+table ReadFromAddressReturn {
+    status: XilStatus = OK;
+    data: [ubyte];
+    info: string;
+}
+
+table WriteToAddressCall {
+    address: ulong;
+    data: [ubyte] (required);
+}
+table WriteToAddressReturn {
+    status: XilStatus = OK;
+    info: string;
+}
+
 table ReadDIDValueCall {
     did: DidSelector (required);
 }
@@ -186,6 +211,30 @@ table WriteDIDValueCall {
 table WriteDIDValueReturn {
     status: XilStatus = OK;
     negative_response_code: ubyte;
+    info: string;
+}
+
+table GetIdentificationDataCall {
+}
+table GetIdentificationDataReturn {
+    status: XilStatus = OK;
+    identifiers: [DidIdentity];
+    info: string;
+}
+
+table GetVariantDataCall {
+}
+table GetVariantDataReturn {
+    status: XilStatus = OK;
+    values: [DidValue];
+    info: string;
+}
+
+table SetVariantDataCall {
+    values: [DidValue] (required);
+}
+table SetVariantDataReturn {
+    status: XilStatus = OK;
     info: string;
 }
 
@@ -217,7 +266,17 @@ union MethodPayload {
     ReadFaultMemoryCall,
     ReadFaultMemoryReturn,
     ClearFaultMemoryCall,
-    ClearFaultMemoryReturn
+    ClearFaultMemoryReturn,
+    ReadFromAddressCall,
+    ReadFromAddressReturn,
+    WriteToAddressCall,
+    WriteToAddressReturn,
+    GetIdentificationDataCall,
+    GetIdentificationDataReturn,
+    GetVariantDataCall,
+    GetVariantDataReturn,
+    SetVariantDataCall,
+    SetVariantDataReturn
 }
 
 table XilRpcMessage {
@@ -253,6 +312,11 @@ rpc_service DiagPort {
     WriteDIDValue(WriteDIDValueCall): WriteDIDValueReturn;
     ReadFaultMemory(ReadFaultMemoryCall): ReadFaultMemoryReturn;
     ClearFaultMemory(ClearFaultMemoryCall): ClearFaultMemoryReturn;
+    ReadFromAddress(ReadFromAddressCall): ReadFromAddressReturn;
+    WriteToAddress(WriteToAddressCall): WriteToAddressReturn;
+    GetIdentificationData(GetIdentificationDataCall): GetIdentificationDataReturn;
+    GetVariantData(GetVariantDataCall): GetVariantDataReturn;
+    SetVariantData(SetVariantDataCall): SetVariantDataReturn;
 }
 
 root_type XilRpcMessage;
