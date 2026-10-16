@@ -254,6 +254,8 @@ table ReadDtcInformationRequest {
     /// Optional, use when sub_function is 0x04 or 0x06. 3-byte layout.
     mask_num: uint32;
     snapshot_record_number: uint8;
+    /// UDS: Severity filter for subfunctions 0x07 and 0x08.
+    severity_mask: uint8;
 }
 table ReadDtcInformationResponse {
     sub_function: DtcSubFunction;
