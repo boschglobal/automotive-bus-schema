@@ -15,7 +15,7 @@
 
 This is a collection of schemas in the Google FlatBuffers IDL for describing automotive network communications within a virtualized simulation environment.
 
-Currently buffer representations of CAN, FlexRay, Ethernet and Encoded Signals at the level of a Communication Matrix definition are provided.
+Currently buffer representations of CAN, FlexRay, Ethernet and diagnostic communication at the level of a Communication Matrix definition are provided.
 
 
 ## Project structure
@@ -74,7 +74,6 @@ After compiling the output can be integrated in the simulation model code. Pleas
 
 This repository includes the following examples:
 
-* [cmake](doc/examples/cmake.md) - An example of a CMake based project with the Signal Schema and MsgPack.
 * [streams](doc/examples/streams.md) - How to use the Stream Interface Frame Schema with FlatBuffers.
 
 
@@ -84,8 +83,6 @@ Schemas in this repository require:
 
 * [FlatBuffers](https://github.com/google/flatbuffers) v1.12.0 or v2.0.0 (or later).
 * [flatcc](https://github.com/dvidelabs/flatcc) v0.6.0 (or later).
-* [msgpack-c](https://github.com/msgpack/msgpack-c) v3.3.0 (or later).
-
 Later versions may require testing.
 
 

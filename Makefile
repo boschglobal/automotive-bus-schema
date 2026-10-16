@@ -39,10 +39,6 @@ FLATCC_SRC_INCLUDE_DIR = /usr/local/include/flatcc
 FLATCC_SRC_LICENSE_DIR = /usr/local/src/flatcc
 FLATCC_DIST_RUNTIME_DIR = $(FBS_OUT_DIR)/c/$(SCHEMA_LIB)/flatcc/src
 FLATCC_DIST_INCLUDE_DIR = $(FBS_OUT_DIR)/c/$(SCHEMA_LIB)/flatcc/include/flatcc
-# MsgPack
-MPK_OUT_DIR = $(OUT_DIR)/msgpack
-MPK_SCHEMA_DIR = $(shell pwd -P)/schemas
-MPK_SCHEMA_SOURCES = $(shell ls $(MPK_SCHEMA_DIR)/**/*.yaml)
 # Python (for creating a Python Package)
 PYTHON_SRC_DIR = $(FBS_OUT_DIR)/python
 PYTHON_DIST_DIR = $(DIST_DIR)/python
@@ -80,13 +76,12 @@ build:
 		--env PACKAGE_VERSION=$(PACKAGE_VERSION) \
 		--workdir /tmp/repo \
 		$(PYTHON_BUILDER_IMAGE) \
-		/bin/bash -c "make python; make msgpack"
+		/bin/bash -c "make python"
 
 	@echo ""
 	@echo "Generated files:"
 	@echo "---------------"
 	@ls -R $(FBS_OUT_DIR)
-	@ls -R $(MPK_OUT_DIR)
 
 $(FBS_SCHEMA_SOURCES):
 	@echo $@
@@ -118,13 +113,6 @@ fbs: $(FBS_SCHEMA_SOURCES)
 	cp $(FLATCC_SRC_LICENSE_DIR)/LICENSE $(FLATCC_DIST_RUNTIME_DIR)
 	mkdir -p $(FLATCC_DIST_INCLUDE_DIR)
 	cp -r $(FLATCC_SRC_INCLUDE_DIR)/* $(FLATCC_DIST_INCLUDE_DIR)
-
-$(MPK_SCHEMA_SOURCES):
-	@echo $@
-	mkdir -p $(MPK_OUT_DIR)/$$(basename $$(dirname $@))
-	cp $@ $(MPK_OUT_DIR)/$$(basename $$(dirname $@))
-
-msgpack: $(MPK_SCHEMA_SOURCES)
 
 python:
 	mkdir -p $(PYTHON_DIST_DIR)
@@ -159,4 +147,4 @@ dist:
 clean:
 	-@rm -rf $(DIST_DIR)
 
-.PHONY: default build fbs msgpack python dist dist_package builders clean $(FBS_SCHEMA_SOURCES) $(MPK_SCHEMA_SOURCES)
+.PHONY: default build fbs python dist dist_package builders clean $(FBS_SCHEMA_SOURCES)
