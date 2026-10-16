@@ -1,0 +1,323 @@
+//***************************************************************************
+// Copyright (c) 2026 for information on the respective copyright owner
+// see the NOTICE file and/or the following repository:
+//     https://github.com
+//
+// SPDX-License-Identifier: Apache-2.0
+//***************************************************************************
+
+namespace AutomotiveBus.Diagnostic.Xil;
+
+
+/**
+    IDL for Automotive Bus - Diagnostic Interface - XiL
+    ===================================================
+
+    ASAM XiL
+
+    MIME Type : application/x-automotive-bus; interface=diagnostic; type=xil; schema=fbs
+    Flatbuffers file identifier : DXIL
+*/
+
+
+/**
+    XIL TO ECU DIAGNOSTIC DATA FLOW
+    -------------------------------
+
+     The XIL adapter serializes diagnostic method calls and their data into RPC
+     payloads. A remote diagnostic service consumes the payload and returns a
+     method result.
+*/
+
+
+
+/**
+    XiL DiagPort
+    ------------
+*/
+namespace AutomotiveBus.Diagnostic.Xil.DiagPort;
+
+enum XilStatus : ubyte {
+    OK                = 0,
+    FAILED            = 1,
+    TIMEOUT           = 2,
+    INVALID_ARGUMENT  = 3,
+    BUS_ERROR         = 4,
+}
+
+enum DiagnosticValueKind : ubyte {
+    UNSPECIFIED = 0,
+    BOOLEAN = 1,
+    SIGNED_INTEGER = 2,
+    UNSIGNED_INTEGER = 3,
+    FLOAT = 4,
+    STRING = 5,
+    BYTES = 6,
+    VECTOR = 7,
+    MATRIX = 8,
+    XY = 9,
+    CURVE = 10,
+    MAP = 11,
+    SIGNAL = 12,
+    SIGNAL_GROUP = 13,
+}
+
+enum DidSelectorKind : ubyte {
+    UNSPECIFIED = 0,
+    IDENTIFIER = 1,
+    NAME = 2,
+}
+
+enum DtcFilterType : ubyte {
+    UNSPECIFIED = 0,
+    FLOATING = 1,
+    PASSIVE = 2,
+    ACTIVE = 7,
+    PERMANENT = 16,
+    SUPPORTED = 32,
+}
+
+table DiagnosticProperty {
+    name: string (required);
+    value: string;
+}
+
+/**
+    A typed value shared by job parameters/results and decoded DID data.
+    Producers MUST populate only the fields selected by `kind`. Scalars use
+    their matching *_value field. Vectors use scalar `elements`; matrices use
+    row-major scalar `elements` with `row_count` and `column_count`. XY/curve
+    values use `x_values` and `y_values`; maps and signal groups use named
+    `series`. `properties` carries string-valued ASAM value attributes.
+*/
+table DiagnosticValue {
+    name: string;
+    kind: DiagnosticValueKind = UNSPECIFIED;
+    boolean_value: bool;
+    signed_value: long;
+    unsigned_value: ulong;
+    float_value: double;
+    string_value: string;
+    bytes_value: [ubyte];
+    elements: [DiagnosticValue];
+    row_count: uint;
+    column_count: uint;
+    x_values: [double];
+    y_values: [double];
+    series: [DiagnosticSeries];
+    unit: string;
+    description: string;
+    properties: [DiagnosticProperty];
+}
+
+table DiagnosticSeries {
+    name: string;
+    values: [DiagnosticValue];
+}
+
+table NamedDiagnosticValue {
+    name: string (required);
+    value: DiagnosticValue (required);
+}
+
+table DataValue {
+    path: string;
+    raw_value: [ubyte];
+    physical_value: DiagnosticValue;
+}
+
+table DidSelector {
+    // IDENTIFIER requires identifier; NAME requires name. Populate only the
+    // field selected by kind.
+    kind: DidSelectorKind = UNSPECIFIED;
+    identifier: ushort;
+    name: string;
+}
+
+table DidIdentity {
+    name: string;
+    identifier: ushort;
+}
+
+table DidValue {
+    did: DidSelector (required);
+    raw_value: [ubyte];
+    values: [DataValue];
+    identity: DidIdentity;
+}
+
+table DiagnosticTroubleCode {
+    value: ulong;
+    status: ubyte;
+    short_name: string;
+    long_name: string;
+    description: string;
+    environment_data: [DataValue];
+}
+
+table ExecuteJobCall {
+    job_name: string (required);
+    parameters: [NamedDiagnosticValue];
+}
+table ExecuteJobReturn {
+    status: XilStatus = OK;
+    values: [DataValue];
+    info: string;
+}
+
+table SendHexServiceCall {
+    pdu: [ubyte] (required);
+    response_required: bool = true;
+}
+table SendHexServiceReturn {
+    status: XilStatus = OK;
+    response_pdu: [ubyte];
+    info: string;
+}
+
+table ReadFromAddressCall {
+    address: ulong;
+    number_of_bytes: ulong;
+}
+table ReadFromAddressReturn {
+    status: XilStatus = OK;
+    data: [ubyte];
+    info: string;
+}
+
+table WriteToAddressCall {
+    address: ulong;
+    data: [ubyte] (required);
+}
+table WriteToAddressReturn {
+    status: XilStatus = OK;
+    info: string;
+}
+
+table ReadDIDValueCall {
+    did: DidSelector (required);
+}
+table ReadDIDValueReturn {
+    // status reports RPC/engine completion. A UDS NRC is carried separately.
+    status: XilStatus = OK;
+    negative_response_code: ubyte;
+    value: DidValue;
+    info: string;
+}
+
+table WriteDIDValueCall {
+    value: DidValue (required);
+}
+table WriteDIDValueReturn {
+    status: XilStatus = OK;
+    negative_response_code: ubyte;
+    info: string;
+}
+
+table GetIdentificationDataCall {
+}
+table GetIdentificationDataReturn {
+    status: XilStatus = OK;
+    identifiers: [DidIdentity];
+    info: string;
+}
+
+table GetVariantDataCall {
+}
+table GetVariantDataReturn {
+    status: XilStatus = OK;
+    values: [DidValue];
+    info: string;
+}
+
+table SetVariantDataCall {
+    values: [DidValue] (required);
+}
+table SetVariantDataReturn {
+    status: XilStatus = OK;
+    info: string;
+}
+
+table ReadFaultMemoryCall {
+    filter: DtcFilterType = UNSPECIFIED;
+}
+table ReadFaultMemoryReturn {
+    status: XilStatus = OK;
+    trouble_codes: [DiagnosticTroubleCode];
+    info: string;
+}
+
+table ClearFaultMemoryCall {
+}
+table ClearFaultMemoryReturn {
+    status: XilStatus = OK;
+    info: string;
+}
+
+union MethodPayload {
+    ExecuteJobCall,
+    ExecuteJobReturn,
+    SendHexServiceCall,
+    SendHexServiceReturn,
+    ReadDIDValueCall,
+    ReadDIDValueReturn,
+    WriteDIDValueCall,
+    WriteDIDValueReturn,
+    ReadFaultMemoryCall,
+    ReadFaultMemoryReturn,
+    ClearFaultMemoryCall,
+    ClearFaultMemoryReturn,
+    ReadFromAddressCall,
+    ReadFromAddressReturn,
+    WriteToAddressCall,
+    WriteToAddressReturn,
+    GetIdentificationDataCall,
+    GetIdentificationDataReturn,
+    GetVariantDataCall,
+    GetVariantDataReturn,
+    SetVariantDataCall,
+    SetVariantDataReturn
+}
+
+table XilRpcMessage {
+    /// RPC: Call/Message/Request identifier.
+    call_id: uint32;
+    /// RPC: Message payload.
+    payload: MethodPayload;
+
+    /// Identifier: Target ECU/Runnable for this Service RPC.
+    ecu_name: string (required);
+    /// Identifier: Diagnostic identifier on ECU/Runnable.
+    logical_link_name: string;
+    /// Metadata: Descriptive information about the target ECU.
+    ecu_information: string;
+
+    /// Metadata: Node UID of the Simulation (or System) node which is sending
+    ///  this stream object. Used by a Node to detect incoming stream objects
+    ///  which the Node had previously sent (i.e. an echo from the underlying
+    ///  implementation of the stream transport).
+    node_uid:uint32;
+
+    /// Metadata: Message timestamp in simulation time.
+    simulation_time: double;
+    /// Metadata: UTC timestamp (i.e. wall clock).
+    utc_time: uint64;
+
+}
+
+rpc_service DiagPort {
+    ExecuteJob(ExecuteJobCall): ExecuteJobReturn;
+    SendHexService(SendHexServiceCall): SendHexServiceReturn;
+    ReadDIDValue(ReadDIDValueCall): ReadDIDValueReturn;
+    WriteDIDValue(WriteDIDValueCall): WriteDIDValueReturn;
+    ReadFaultMemory(ReadFaultMemoryCall): ReadFaultMemoryReturn;
+    ClearFaultMemory(ClearFaultMemoryCall): ClearFaultMemoryReturn;
+    ReadFromAddress(ReadFromAddressCall): ReadFromAddressReturn;
+    WriteToAddress(WriteToAddressCall): WriteToAddressReturn;
+    GetIdentificationData(GetIdentificationDataCall): GetIdentificationDataReturn;
+    GetVariantData(GetVariantDataCall): GetVariantDataReturn;
+    SetVariantData(SetVariantDataCall): SetVariantDataReturn;
+}
+
+root_type XilRpcMessage;
+file_identifier "DXIL";
