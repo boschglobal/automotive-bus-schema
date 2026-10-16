@@ -10,72 +10,86 @@
 [![CI](https://github.com/boschglobal/automotive-bus-schema/actions/workflows/ci.yaml/badge.svg)](https://github.com/boschglobal/automotive-bus-schema/actions/workflows/ci.yaml)
 ![GitHub](https://img.shields.io/github/license/boschglobal/automotive-bus-schema)
 
-
 ## Introduction
 
-This is a collection of schemas in the Google FlatBuffers IDL for describing automotive network communications within a virtualized simulation environment.
+Automotive Bus Schema is a collection of schemas in the Google FlatBuffers IDL for describing automotive network communications within a virtualized simulation environment.
 
-Currently buffer representations of CAN, FlexRay, Ethernet and diagnostic communication at the level of a Communication Matrix definition are provided.
+The repository currently provides buffer representations of CAN, FlexRay, Ethernet, and diagnostic communication at the level of a Communication Matrix definition.
 
+### User Guide
 
-## Project structure
-```
-L- docs        Documentation
-L- schemas     Schemas of the Standard
-L- docker      Supporting build environments
-```
+* [Streams Example](doc/examples/streams.md) - How to use the Stream Interface Frame Schema with FlatBuffers.
+* [FlatBuffers Tutorial](https://google.github.io/flatbuffers/flatbuffers_guide_tutorial.html)
 
+### Project Structure
 
-## Build Run and Use
-
-### Compile
-
-The schemas can be compiled using a containerized build toolchain as follows:
-
-```bash
-$ git clone https://github.com/boschglobal/automotive-bus-schema.git
-$ cd automotive-bus-schema
-
-# Build the toolchains (optional, builder containers are published on ghcr.io).
-$ make builders
-...
-$ docker images
-REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
-python-builder      latest              a5ef73ea66dc        16 minutes ago      858MB
-flatc-builder       latest              f4bb83e2c0c9        18 minutes ago      324MB
-
-# Build and package the schemas.
-$ make
-...
-$ make dist
-
-Distribution package files:
---------------------------
-204K /vagrant/git/oss/automotive-bus-schema/dist/automotive-bus-schema.tar.gz
-36K /vagrant/git/oss/automotive-bus-schema/dist/python/dist/automotive_bus_schema-devel-py3-none-any.whl
-12K /vagrant/git/oss/automotive-bus-schema/dist/python/dist/automotive-bus-schema-devel.tar.gz
+```text
+automotive-bus-schema
+├── doc                     <-- Project documentation.
+├── docker                  <-- Containerized build toolchains.
+├── examples                <-- Example projects using the schemas.
+├── schemas                 <-- FlatBuffers schema definitions.
+├── templates               <-- Package templates.
+├── Makefile                <-- Repo-level Makefile.
+├── LICENSE                 <-- Project license.
+└── NOTICE                  <-- Project notices.
 ```
 
-Alternatively, a build toolchain can be developed based on the Dockerfiles
-([Flatc/Flatcc](docker/flatc-builder/Dockerfile), [Python](docker/python-builder/Dockerfile)) used
-to generate the above containerized toolchain. For more information regarding compiling a FlatBuffers schema for your
-language, please refer first to the official page [for supported languages](https://google.github.io/flatbuffers/flatbuffers_support.html).
-and compiler options listed [here](https://google.github.io/flatbuffers/flatbuffers_guide_using_schema_compiler.html).
+## Usage
 
-Note that for C language the [flatcc compiler](https://google.github.io/flatbuffers/flatbuffers_guide_use_c.html) is recommended.
-
-
-### Usage
-
-After compiling the output can be integrated in the simulation model code. Please refer to the [FlatBuffers Tutorial](https://google.github.io/flatbuffers/flatbuffers_guide_tutorial.html) for example usage of compiled code, e.g. how to read or write data structures defined in a schema.
-
-
-### Examples
+After compiling the schemas, the generated output can be integrated into simulation model code. For more information about using FlatBuffers schemas, refer to the [FlatBuffers Tutorial](https://google.github.io/flatbuffers/flatbuffers_guide_tutorial.html).
 
 This repository includes the following examples:
 
 * [streams](doc/examples/streams.md) - How to use the Stream Interface Frame Schema with FlatBuffers.
 
+## Build
+
+The schemas can be compiled using the containerized build toolchain as follows:
+
+```bash
+# Clone the repo.
+git clone https://github.com/boschglobal/automotive-bus-schema.git
+cd automotive-bus-schema
+
+# Optionally build the toolchains locally.
+make builders
+
+# Build and package the schemas.
+make
+make dist
+
+# Remove temporary build artifacts.
+make clean
+```
+
+### Toolchains
+
+Automotive Bus Schema is built using containerized toolchains. Builder container images are published on `ghcr.io` and can be selected with the following variables:
+
+```bash
+export CONTAINER_REPO=ghcr.io
+export CONTAINER_PREFIX=boschglobal/automotive-bus-schema-
+export CONTAINER_TAG=main
+export FLATC_BUILDER_IMAGE=${CONTAINER_REPO}/${CONTAINER_PREFIX}flatc-builder:${CONTAINER_TAG}
+export PYTHON_BUILDER_IMAGE=${CONTAINER_REPO}/${CONTAINER_PREFIX}python-builder:${CONTAINER_TAG}
+export GCC_BUILDER_IMAGE=${CONTAINER_REPO}/${CONTAINER_PREFIX}gcc-builder:${CONTAINER_TAG}
+```
+
+Alternatively, the builder images can be created locally:
+
+```bash
+make builders
+```
+
+The Dockerfiles used to generate the toolchains are available here:
+
+* [Flatc/Flatcc builder](docker/flatc-builder/Dockerfile)
+* [Python builder](docker/python-builder/Dockerfile)
+
+For more information about compiling FlatBuffers schemas for your language, see the official [supported languages](https://google.github.io/flatbuffers/flatbuffers_support.html) and [schema compiler options](https://google.github.io/flatbuffers/flatbuffers_guide_using_schema_compiler.html) documentation.
+
+> Note: For C language, the [flatcc compiler](https://google.github.io/flatbuffers/flatbuffers_guide_use_c.html) is recommended.
 
 ## Dependencies
 
@@ -83,14 +97,14 @@ Schemas in this repository require:
 
 * [FlatBuffers](https://github.com/google/flatbuffers) v1.12.0 or v2.0.0 (or later).
 * [flatcc](https://github.com/dvidelabs/flatcc) v0.6.0 (or later).
-Later versions may require testing.
 
+Later versions may require testing.
 
 ## Contribute
 
-Please refer to the [CONTRIBUTING.md](./CONTRIBUTING.md) for a quick read-up about what to consider if you want to contribute.
-
+Please refer to the [CONTRIBUTING.md](./CONTRIBUTING.md) file.
 
 ## License
 
-Automotive Bus FlatBuffers Schema is open-sourced under the Apache-2.0 license. See the [LICENSE](./LICENSE) and [NOTICE](./NOTICE) for details.
+This project is open-sourced under the Apache-2.0 license.
+See the [LICENSE](LICENSE) and [NOTICE](./NOTICE) files for details.
