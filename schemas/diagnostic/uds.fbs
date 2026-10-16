@@ -317,16 +317,13 @@ table RoutineControlResponse {
 */
 
 enum CompressionMethod : uint8 {
-    NoCompression                               = 0,
-    Deflate                                     = 1, // IETF RFC 1951 zip compression
-    ManufacturerSpecific                        = 15,
+    NoCompression                               = 0, // ISO 14229: no compression applied
+    // Values 1..15 are valid manufacturer-specific compression method identifiers.
 }
 
 enum EncryptionMethod : uint8 {
-    NoEncryption                                = 0,
-    Aes128                                      = 1,
-    Rsa2048                                     = 2,
-    ManufacturerSpecific                        = 15,
+    NoEncryption                                = 0, // ISO 14229: no encryption applied
+    // Values 1..15 are valid manufacturer-specific encryption method identifiers.
 }
 
 enum BlockLengthSizing : uint8 {
