@@ -335,8 +335,8 @@ enum BlockLengthSizing : uint8 {
 }
 
 struct DataFormatIdentifier {
-    compression: CompressionMethod; // 0 = no compression; 1..15 = manufacturer-specific
-    encryption:  EncryptionMethod;  // 0 = no encryption; 1..15 = manufacturer-specific
+    compression: CompressionMethod;
+    encryption:  EncryptionMethod;
 }
 
 struct LengthFormatIdentifier {
