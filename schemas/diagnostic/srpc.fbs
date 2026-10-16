@@ -42,7 +42,7 @@ table MessageContext {
     /// Metadata: An identifier for this message context.
     context_id: ubyte;
     /// Metadata: Frame identifier when the response should be associated with a network pdu.
-    rx_pdu_id: byte;
+    rx_pdu_id: uint32;
 }
 
 table InvokeCall {
