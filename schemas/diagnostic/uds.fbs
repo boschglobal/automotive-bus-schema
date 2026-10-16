@@ -108,6 +108,8 @@ enum CommunicationControlType : uint8 {
 table CommunicationControlRequest {
     control_type: CommunicationControlType;
     communication_type: uint8; // Bitmask mapping application/network message types
+    /// UDS: Node identifier for enhanced-address control type 0x04.
+    node_identification_number: uint16;
 }
 table CommunicationControlResponse {
     control_type: CommunicationControlType;
