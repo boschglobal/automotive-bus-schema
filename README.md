@@ -27,12 +27,13 @@ The repository currently provides buffer representations of CAN, FlexRay, Ethern
 automotive-bus-schema
 ├── doc                     <-- Project documentation.
 ├── docker                  <-- Containerized build toolchains.
-├── examples                <-- Example projects using the schemas.
-├── schemas                 <-- FlatBuffers schema definitions.
+├── examples                <-- Example projects.
+├── schemas
+│   ├── diagnostic          <-- Diagnostic schemas: ISO/TP, UDS, XiL etc.
+│   ├── register            <-- Register based schemas: CAN, FlexRay, Ethernet.
+│   └── stream              <-- Stream based schemas: PDU (CAN, FlexRay, Eth) and Frame (CAN).
 ├── templates               <-- Package templates.
-├── Makefile                <-- Repo-level Makefile.
-├── LICENSE                 <-- Project license.
-└── NOTICE                  <-- Project notices.
+└── Makefile                <-- Repo-level Makefile.
 ```
 
 ## Usage
