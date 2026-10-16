@@ -102,8 +102,8 @@ enum CommunicationControlType : uint8 {
     EnableRxAndDisableTx                        = 0x01,
     DisableRxAndEnableTx                        = 0x02,
     DisableRxAndTx                              = 0x03,
-    EnableRxAndTxWithEnhancedAddress            = 0x04,
-    EnableRxAndDisableTxWithEnhancedAddress     = 0x05,
+    EnableRxAndDisableTxWithEnhancedAddress     = 0x04,
+    EnableRxAndTxWithEnhancedAddress            = 0x05,
 }
 table CommunicationControlRequest {
     control_type: CommunicationControlType;
