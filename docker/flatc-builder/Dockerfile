@@ -78,7 +78,6 @@ RUN apt-get -y update; \
         cmake \
         gcc \
         git \
-        libmsgpack-dev \
         make \
         zip \
     && \

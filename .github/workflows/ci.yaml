@@ -67,7 +67,6 @@ jobs:
           run: |
             cd work 
             make python
-            make msgpack
             
       - name: Package
         uses: addnab/docker-run-action@v3

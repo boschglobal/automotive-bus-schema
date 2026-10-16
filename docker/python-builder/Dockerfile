@@ -31,7 +31,6 @@ ENV PATH="/opt/venv/bin:$PATH"
 # ================
 RUN pip install --upgrade pip; pip install \
         flatbuffers==1.12 \
-        msgpack \
         numpy \
         pip-licenses \
         pytest \
