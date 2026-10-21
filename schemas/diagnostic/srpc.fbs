@@ -88,11 +88,17 @@ table ServiceRpcMessage {
     payload: Payload;
 
     /// Identifier: Target ECU/Runnable for this Service RPC.
-    ecu_name: string;
+    target_ecu_name: string;
     /// Identifier: Target ECU for this Service RPC.
-    ecu_id: uint32;
+    target_ecu_id: uint32;
     /// Identifier: Target Runnable for this Service RPC.
-    swc_id: uint32;
+    target_swc_id: uint32;
+    /// Identifier: Origin ECU for this Service RPC.
+    origin_ecu_id: uint32;
+    /// Identifier: Origin Runnable for this Service RPC.
+    origin_swc_id: uint32;
+
+
     /// Metadata: Frame ID related to _this_ Service RPC message if it
     ///  is transmitted on a bus (CAN, FlexRay, IP etc).
     frame_id: uint32;
