@@ -15,7 +15,15 @@ namespace AutomotiveBus.Diagnostic.ServiceRpc;
 
     Service RPC
 
-    MIME Type : application/x-automotive-bus; interface=diagnostic; type=srpc; schema=fbs
+    MIME Type : application/x-automotive-bus;
+                interface=diagnostic;
+                type=srpc;
+                schema=fbs;
+                ecu_name=<ecu_name>;
+                ecu_id=<ecu_id>;
+                swc_id=<swc_id>;
+                loopback=<0|1>;
+
     Flatbuffers file identifier : DSRP
 
 
@@ -30,31 +38,41 @@ table MessageContext {
     response: [ubyte];
 
     /// Request: Type of request (transparent to the Service RPC).
-    request_type: ubyte;
+    request_type: uint32;
     /// Request: Source of request (transparent to the Service RPC).
-    request_source: ubyte;
+    request_source: uint32;
 
     /// Response: Include the request bytes in the response message.
     response_include_request: bool;
-    /// Response: A response is returned in all cases, or only when an error has occurred."
+    /// Response: A response is returned in all cases, or only when an error
+    ///  has occurred."
     response_required: bool = true;
 
     /// Metadata: An identifier for this message context.
-    context_id: ubyte;
-    /// Metadata: Frame identifier when the response should be associated with a network pdu.
+    context_id: uint32;
+    /// Metadata: Frame identifier when the response should be associated
+    ///  with a network pdu.
     rx_pdu_id: uint32;
 }
 
 table InvokeCall {
+    /// Invoke: The service name containing the function to be invoked.
     service: string (required);
+    /// Invoke: The function name to be invoked.
     function: string (required);
-    op_status: ubyte;
+    /// Metadata: Additional out-of-band operation status value.
+    op_status: uint32;
+    /// Context: Context object to be passed to the invoked function.
     ctx: MessageContext (required);
 }
 
 table InvokeReturn {
-    return_value: ubyte;
-    error_code: ubyte;
+    /// Invoke: Return value from the invoked function.
+    return_value: uint32;
+    /// Invoke: Error code, either from the invoked function or from the invoke
+    ///  call itself (service dependant).
+    error_code: int32;
+    /// Context: Context object with response from the invoked function.
     ctx: MessageContext (required);
 }
 
@@ -72,10 +90,10 @@ table ServiceRpcMessage {
     /// Identifier: Target ECU/Runnable for this Service RPC.
     ecu_name: string;
     /// Identifier: Target ECU for this Service RPC.
-    ecu_id:uint32;
+    ecu_id: uint32;
     /// Identifier: Target Runnable for this Service RPC.
-    swc_id:uint32;
-    /// Identifier: Frame ID related to _this_ Service RPC message if it
+    swc_id: uint32;
+    /// Metadata: Frame ID related to _this_ Service RPC message if it
     ///  is transmitted on a bus (CAN, FlexRay, IP etc).
     frame_id: uint32;
 
@@ -83,7 +101,7 @@ table ServiceRpcMessage {
     ///  this stream object. Used by a Node to detect incoming stream objects
     ///  which the Node had previously sent (i.e. an echo from the underlying
     ///  implementation of the stream transport).
-    node_uid:uint32;
+    node_uid: uint32;
 
     /// Metadata: Message timestamp in simulation time.
     simulation_time: double;

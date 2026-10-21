@@ -12,14 +12,19 @@
 
 ## Introduction
 
-Automotive Bus Schema is a collection of schemas in the Google FlatBuffers IDL for describing automotive network communications within a virtualized simulation environment.
+Automotive Bus Schema is a collection of schemas in the FlatBuffers IDL for describing automotive network communications within a virtualized simulation environment.
 
-The repository currently provides buffer representations of CAN, FlexRay, Ethernet, and diagnostic communication at the level of a Communication Matrix definition.
+The repository currently provides representations of CAN, FlexRay, Ethernet, and Diagnostic communications.
 
-### User Guide
 
+### User Guide and Reference Material
+
+* [DSE NCodec](https://github.com/boschglobal/dse.ncodec) - Implementation of these schemas.
+  * [AB Codec](https://github.com/boschglobal/dse.ncodec/tree/main/dse/ncodec/codec/ab) - CAN, FlexRay and Ethernet.
+  * [Diag](https://github.com/boschglobal/dse.ncodec/tree/main/dse/ncodec/codec/diag) - Diagnostics: UDS/ISO-TP, ASAM XiL and a general purpose Service RPC.
 * [Streams Example](doc/examples/streams.md) - How to use the Stream Interface Frame Schema with FlatBuffers.
-* [FlatBuffers Tutorial](https://google.github.io/flatbuffers/flatbuffers_guide_tutorial.html)
+* [FlatBuffers Tutorial](https://google.github.io/flatbuffers/flatbuffers_guide_tutorial.html) - FlatBuffers tutorial from Google.
+
 
 ### Project Structure
 
@@ -36,15 +41,10 @@ automotive-bus-schema
 └── Makefile                <-- Repo-level Makefile.
 ```
 
+
 ## Usage
 
-After compiling the schemas, the generated output can be integrated into simulation model code. For more information about using FlatBuffers schemas, refer to the [FlatBuffers Tutorial](https://google.github.io/flatbuffers/flatbuffers_guide_tutorial.html).
-
-This repository includes the following examples:
-
-* [streams](doc/examples/streams.md) - How to use the Stream Interface Frame Schema with FlatBuffers.
-
-## Build
+### Build
 
 The schemas can be compiled using the containerized build toolchain as follows:
 
@@ -92,6 +92,7 @@ For more information about compiling FlatBuffers schemas for your language, see 
 
 > Note: For C language, the [flatcc compiler](https://google.github.io/flatbuffers/flatbuffers_guide_use_c.html) is recommended.
 
+
 ## Dependencies
 
 Schemas in this repository require:
@@ -101,11 +102,14 @@ Schemas in this repository require:
 
 Later versions may require testing.
 
+
 ## Contribute
 
 Please refer to the [CONTRIBUTING.md](./CONTRIBUTING.md) file.
 
+
 ## License
 
 This project is open-sourced under the Apache-2.0 license.
+
 See the [LICENSE](LICENSE) and [NOTICE](./NOTICE) files for details.
